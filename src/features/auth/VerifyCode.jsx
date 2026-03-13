@@ -19,34 +19,39 @@ const VerifyCode = () => {
 
   const handleSubmit = async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  if (code.length !== 6) {
-    setError("Ingresa el código completo");
-    return;
-  }
+    if (code.length !== 6) {
+      setError("Ingresa el código completo");
+      return;
+    }
 
-  try {
+    try {
 
-    setLoading(true);
+      setLoading(true);
 
-    const email = localStorage.getItem("email");
+      const email = localStorage.getItem("resetEmail");
+      const processType = localStorage.getItem("processType");
 
-    await verifyCodeRequest(email, code);
+      await verifyCodeRequest(email, code);
 
-    navigate("/reset-password");
+      if (processType === "register") {
+        navigate("/set-password");
+      } else {
+        navigate("/reset-password");
+      }
 
-  } catch (err) {
+    } catch (err) {
 
-    setError(err.message);
+      setError(err.message || "Código incorrecto");
 
-  } finally {
+    } finally {
 
-    setLoading(false);
+      setLoading(false);
 
-  }
+    }
 
-};
+  };
 
   return (
     <AuthLayout>
@@ -59,17 +64,22 @@ const VerifyCode = () => {
 
           <p>Ingresa el código enviado a tu correo</p>
 
-          <CodeInput length={6} onComplete={handleComplete} />
+          <form onSubmit={handleSubmit}>
 
-          {error && (
-            <p className="error-message">{error}</p>
-          )}
+            <CodeInput length={6} onComplete={handleComplete} />
 
-          <Button
-            variant="primary"
-            text={loading ? "Verificando..." : "Verificar"}
-            onClick={handleSubmit}
-          />
+            {error && (
+              <p className="error-message">{error}</p>
+            )}
+
+            <Button
+              variant="primary"
+              text={loading ? "Verificando..." : "Verificar"}
+              type="submit"
+              disabled={loading}
+            />
+
+          </form>
 
         </section>
 

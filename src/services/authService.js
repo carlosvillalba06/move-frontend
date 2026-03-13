@@ -49,7 +49,6 @@ export const setPasswordRequest = async (password) => {
   });
 
 };
-
 export const resetPasswordRequest = async (password, token) => {
 
   return await apiFetch("/addPassword", {

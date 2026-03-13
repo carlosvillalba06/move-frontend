@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoutes from "./ProtectedRoutes";
 import RegisterEmail from "../features/auth/RegisterEmail";
 import VerifyCode from "../features/auth/VerifyCode";
-import VerifyEmail from "../features/auth/VerifyEmail";
 import SetPassword from "../features/auth/SetPassword";
 import ResetPassword from "../features/auth/ResetPassword";
 import AdminDashboard from "../features/dashboard/AdminDashboard";
@@ -10,6 +9,7 @@ import AdvisorDashboard from "../features/dashboard/AdvisorDashboard";
 import SettingsPage from "../features/users/SettingsPage";
 
 import Login from "../features/auth/Login";
+import ForgotPasswordEmail from "../features/auth/ForgotPasswordEmail";
 
 const AppRouter = () => {
     return (
@@ -20,7 +20,7 @@ const AppRouter = () => {
             <Route path="/verify-code" element={<VerifyCode />} />
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify-email" element={<VerifyEmail/>}/>
+            <Route path="/verify-email" element={<ForgotPasswordEmail/>}/>
             {/* ADMIN + ADVISOR */}
 
             <Route element={<ProtectedRoutes allowedRoles={["admin", "advisor"]} />}>

@@ -64,7 +64,8 @@ const ResetPassword = () => {
     try {
 
       await resetPasswordRequest(password);
-
+      localStorage.removeItem("resetEmail");
+      localStorage.removeItem("processType");
       navigate("/login");
 
     } catch (err) {

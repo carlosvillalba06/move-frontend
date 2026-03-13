@@ -62,6 +62,8 @@ const handleSubmit = async (e) => {
   if (!validate()) return;
 
   try {
+    localStorage.removeItem("email");
+    localStorage.removeItem("processType");
 
     await setPasswordRequest(password);
 

@@ -47,7 +47,7 @@ const RegisterEmail = () => {
 
       await registerRequest(email);
       localStorage.setItem("email",email);
-
+      localStorage.setItem("processType", "register");
       navigate("/verify-code");
 
     } catch (err) {
