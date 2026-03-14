@@ -1,4 +1,4 @@
-const API_URL = "http://10.75.196.237:8080/api/user";
+const API_URL = "http://localhost:8080/api/user";
 
 export const apiFetch = async (endpoint, options = {}) => {
 

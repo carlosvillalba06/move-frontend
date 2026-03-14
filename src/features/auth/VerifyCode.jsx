@@ -30,10 +30,12 @@ const VerifyCode = () => {
 
       setLoading(true);
 
-      const email = localStorage.getItem("resetEmail");
+      const email = localStorage.getItem("email");
       const processType = localStorage.getItem("processType");
 
-      await verifyCodeRequest(email, code);
+      const data = await verifyCodeRequest(email, code);
+
+      localStorage.setItem("passwordToken", data.passwordToken);
 
       if (processType === "register") {
         navigate("/set-password");
@@ -55,13 +57,11 @@ const VerifyCode = () => {
 
   return (
     <AuthLayout>
-
       <main className="login-container">
 
         <section className="login-box">
 
           <h1>Verificar código</h1>
-
           <p>Ingresa el código enviado a tu correo</p>
 
           <form onSubmit={handleSubmit}>
@@ -84,7 +84,6 @@ const VerifyCode = () => {
         </section>
 
       </main>
-
     </AuthLayout>
   );
 };

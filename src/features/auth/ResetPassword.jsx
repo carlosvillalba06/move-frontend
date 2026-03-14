@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import InputPassword from "../../components/Input-password";
 import Button from "../../components/Button";
 import AuthLayout from "../../components/layouts/AuthLayout";
-import { resetPasswordRequest } from "../../services/authService";
-
+import { setPasswordRequest } from "../../services/authService";
 
 const ResetPassword = () => {
 
@@ -53,6 +52,7 @@ const ResetPassword = () => {
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
+
   };
 
   const handleSubmit = async (e) => {
@@ -63,9 +63,12 @@ const ResetPassword = () => {
 
     try {
 
-      await resetPasswordRequest(password);
-      localStorage.removeItem("resetEmail");
+      await setPasswordRequest(password);
+
+      localStorage.removeItem("email");
       localStorage.removeItem("processType");
+      localStorage.removeItem("passwordToken");
+
       navigate("/login");
 
     } catch (err) {

@@ -55,27 +55,29 @@ const SetPassword = () => {
 
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!validate()) return;
+    if (!validate()) return;
 
-  try {
-    localStorage.removeItem("email");
-    localStorage.removeItem("processType");
+    try {
 
-    await setPasswordRequest(password);
+      await setPasswordRequest(password);
 
-    navigate("/login");
+      localStorage.removeItem("email");
+      localStorage.removeItem("processType");
+      localStorage.removeItem("passwordToken");
 
-  } catch (err) {
+      navigate("/login");
 
-    setFormError(err.message);
+    } catch (err) {
 
-  }
+      setFormError(err.message);
 
-};
+    }
+
+  };
 
   return (
     <AuthLayout>
@@ -116,9 +118,7 @@ const handleSubmit = async (e) => {
             </div>
 
             {formError && (
-              <p className="error-message">
-                {formError}
-              </p>
+              <p className="error-message">{formError}</p>
             )}
 
             <Button
