@@ -10,6 +10,7 @@ import SettingsPage from "../features/users/SettingsPage";
 
 import Login from "../features/auth/Login";
 import ForgotPasswordEmail from "../features/auth/ForgotPasswordEmail";
+import TasksPage from "../features/tasks/TasksPage";
 
 const AppRouter = () => {
     return (
@@ -27,6 +28,7 @@ const AppRouter = () => {
 
                 <Route path="/advisor/dashboard/*" element={<AdvisorDashboard />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/advisors/:advisorId/kanban" element={<TasksPage />} />
 
             </Route>
 

@@ -3,9 +3,11 @@ import logoMove from "../assets/logoImg.png";
 import userMove from "../assets/userMOVE.png"
 
 
+
 const AdminNavbar = ({ advisorName }) => {
 
   const user = JSON.parse(localStorage.getItem("user"));
+  
 
   return (
 

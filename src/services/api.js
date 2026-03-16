@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api/user";
+const API_URL = "http://localhost:8080/api";
 
 export const apiFetch = async (endpoint, options = {}) => {
 
@@ -8,11 +8,11 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     const headers = {
       ...(options.body && { "Content-Type": "application/json" }),
-      ...(token && { Authorization: Bearer ${token} }),
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers
     };
 
-    const response = await fetch(${API_URL}${endpoint}, {
+    const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers
     });
@@ -29,7 +29,6 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     if (!response.ok) {
 
-      // si el token expiró
       if (response.status === 401) {
         localStorage.removeItem("token");
         window.location.href = "/login";

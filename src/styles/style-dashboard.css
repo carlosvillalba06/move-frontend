@@ -260,3 +260,21 @@ button {
 .btn-enable {
   background-color: #042; 
 }
+.add-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  /* Fondo gris claro para coincidir con la barra de búsqueda en la imagen */
+  background: #EAEAEA; 
+  /* Texto y icono de color gris oscuro, no blanco */
+  color: #616161; 
+  border: none;
+  border-radius: 6px; 
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+

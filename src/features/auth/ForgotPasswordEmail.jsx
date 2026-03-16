@@ -45,10 +45,8 @@ const ForgotPasswordEmail = () => {
 
       setLoading(true);
 
-      // Llama al endpoint del backend
       await resetPasswordRequest(email);
 
-      // Guardar datos para el flujo
       localStorage.setItem("email", email);
       localStorage.setItem("processType", "reset");
 

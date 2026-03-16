@@ -1,0 +1,136 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content {
+  background: white;
+  width: 600px;
+  padding: 40px;
+  border-radius: 20px;
+  position: relative;
+}
+
+.close-x {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  width: 50px;
+  height: 48px;
+  background: white;
+  cursor: pointer;
+  display: flex;         /* Centra el SVG */
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.close-x:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.modal-content h2 {
+  font-size: 32px;
+  margin: 0 0 30px 0;
+}
+
+.grid-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 40px;
+}
+
+.grid-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.grid-form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+.modal-content footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.modal-content footer button {
+  background: #000;
+  color: #fff;
+  padding: 10px 40px;
+  border-radius: 10px;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+}
+
+.alert-content{
+  background:white;
+  padding:30px;
+  border-radius:10px;
+  text-align:center;
+  width:320px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.2);
+}
+
+.alert-content h2{
+  margin-bottom:10px;
+}
+
+.alert-content p{
+  margin-bottom:20px;
+  color:#666;
+}
+
+.continue-button{
+  padding:8px 20px;
+  border:none;
+  border-radius:6px;
+  background:#000000;
+  color:white;
+  cursor:pointer;
+}
+
+.continue-button:hover{
+  background:#020202;
+}
+
+.alert-buttons{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:20px;
+}
+
+.cancel-btn{
+  padding:6px 16px;
+  border:none;
+  background:#e5e5e5;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.confirm-btn{
+  padding:6px 16px;
+  border:none;
+  background:#000000;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.confirm-btn:hover{
+  background:#000000;
+}

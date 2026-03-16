@@ -77,8 +77,6 @@ const Login = () => {
         setServerError("Credenciales incorrectas");
         return;
       }
-
-      // leer sesión guardada
       const storedSession = JSON.parse(localStorage.getItem("session"));
       const role = storedSession?.user?.rol?.toLowerCase();
 
@@ -137,7 +135,7 @@ const Login = () => {
             </div>
 
             <p>
-              <Link to="/forgot-password">
+              <Link to="/verify-email">
                 ¿Olvidaste tu contraseña?
               </Link>
             </p>
