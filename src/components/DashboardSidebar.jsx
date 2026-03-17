@@ -8,9 +8,9 @@ const DashboardSidebar = ({ role }) => {
       { label: "Tableros", path: "/admin/dashboard/tablero" },
       { label: "Asesores", path: "/admin/dashboard/asesores" }
     ],
-    ADVISOR: [
-      { label: "Tablero", path: "/advisor/dashboard" },
-      { label: "Estudiantes", path: "/advisor/students" }
+    ADVISER: [
+      { label: "Tablero", path: "/advisor/dashboard/tablero" },
+      { label: "Estudiantes", path: "/advisor/dashboard/estudiantes" }
     ]
   };
 

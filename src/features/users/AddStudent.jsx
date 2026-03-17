@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { registerAdvisorRequest } from "../../services/adminService";
+import { registerStudentRequest } from "../../services/adviserService";
 
-const AddAdvisor = ({ isOpen, onClose, onAdvisorCreated }) => {
-
+const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -22,8 +21,8 @@ const AddAdvisor = ({ isOpen, onClose, onAdvisorCreated }) => {
     e.preventDefault();
 
     try {
-      await registerAdvisorRequest(form);
-      await onAdvisorCreated();
+      await registerStudentRequest(form);
+      await onStudentCreated();
       setForm({
         firstName: "",
         lastName: "",
@@ -31,28 +30,28 @@ const AddAdvisor = ({ isOpen, onClose, onAdvisorCreated }) => {
       });
       onClose();
     } catch (error) {
-      console.error(error);
+      console.error("Error al registrar estudiante:", error);
     }
   };
 
   return (
-
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="close-x" onClick={onClose}>X</button>
 
-        <h2>Registrar asesor</h2>
+        <h2>Registrar estudiante</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="grid-form">
-
             <div>
               <label>Nombre(s):</label>
               <input
                 type="text"
                 name="firstName"
+                placeholder="Ej. Carlos Giovanni"
                 value={form.firstName}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -61,33 +60,33 @@ const AddAdvisor = ({ isOpen, onClose, onAdvisorCreated }) => {
               <input
                 type="text"
                 name="lastName"
+                placeholder="Ej. Villalba González"
                 value={form.lastName}
                 onChange={handleChange}
+                required
               />
             </div>
 
-            <div>
-              <label>Correo:</label>
+            <div style={{ gridColumn: "span 2" }}>
+              <label>Correo institucional:</label>
               <input
                 type="email"
                 name="email"
+                placeholder="usuario@utez.edu.mx"
                 value={form.email}
                 onChange={handleChange}
+                required
               />
             </div>
-
           </div>
 
           <footer>
             <button type="submit">Registrar</button>
           </footer>
-
         </form>
       </div>
     </div>
-
   );
-
 };
 
-export default AddAdvisor;
+export default AddStudent;

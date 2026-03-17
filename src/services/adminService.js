@@ -1,4 +1,4 @@
-import { apiFetch } from "./Api";
+import { apiFetch } from "./api";
 
 
 // Registrar asesor
@@ -33,16 +33,25 @@ export const getAdminInformationRequest = async () => {
   });
 };
 
-
 // Subir logo del admin
 export const uploadLogoRequest = async (file) => {
+
+  const token = localStorage.getItem("token");
 
   const formData = new FormData();
   formData.append("file", file);
 
-  return await apiFetch("/admin/uploadLogo", {
+  const response = await fetch("http://localhost:8080/api/admin/uploadLogo", {
     method: "POST",
-    body: formData,
-    headers: {} // importante porque FormData no usa JSON
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: formData
   });
+
+  if (!response.ok) {
+    throw new Error("Error subiendo imagen");
+  }
+
+  return response.json();
 };

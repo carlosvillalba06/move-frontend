@@ -278,3 +278,25 @@ button {
   transition: all 0.2s ease;
 }
 
+.logout-wrapper {
+    margin-top: 50px; /* Espacio extra para separarlo de las secciones */
+    display: flex;
+    justify-content: center; /* Centrado para que destaque como acción global */
+    padding-bottom: 40px;
+}
+
+.logout-btn {
+    background-color: #000; 
+    color: #fff;
+    padding: 12px 60px;
+    border: none;
+    border-radius: 10px; 
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #333; /* Un gris oscuro al pasar el mouse */
+}

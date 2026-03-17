@@ -24,11 +24,11 @@ const AppRouter = () => {
             <Route path="/verify-email" element={<ForgotPasswordEmail/>}/>
             {/* ADMIN + ADVISOR */}
 
-            <Route element={<ProtectedRoutes allowedRoles={["admin", "advisor"]} />}>
+            <Route element={<ProtectedRoutes allowedRoles={["admin", "adviser"]} />}>
 
                 <Route path="/advisor/dashboard/*" element={<AdvisorDashboard />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/advisors/:advisorId/kanban" element={<TasksPage />} />
+                <Route path="/kanban/:boardId" element={<TasksPage />} />
 
             </Route>
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import KanbanColumn from "./KanbanColumn";
-{/*import { getTasksRequest } from "../services/taskService"; */}
+import { getTasksByBoardRequest } from "../../../services/taskService";
 
-const KanbanBoard = ({advisorId}) => {
+const KanbanBoard = ({ boardId }) => {
 
   const [tasks, setTasks] = useState([]);
 
@@ -10,18 +10,18 @@ const KanbanBoard = ({advisorId}) => {
 
     const loadTasks = async () => {
       try {
-
-       /* const data = await getTasksByAdvisorRequest(advisorId);*/ 
+        const data = await getTasksByBoardRequest(boardId);
         setTasks(data);
-
       } catch (error) {
         console.error("Error cargando tareas", error);
       }
     };
 
-    loadTasks();
+    if (boardId) {
+      loadTasks();
+    }
 
-  }, [advisorId]);
+  }, [boardId]);
 
   return (
 

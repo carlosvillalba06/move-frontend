@@ -1,14 +1,9 @@
 const API_URL = "http://localhost:8080/api/tasks";
 
-export const getTasksRequest = async () => {
-
-  const response = await fetch(API_URL);
-
-  if (!response.ok) {
-    throw new Error("Error obteniendo tareas");
-  }
-
-  return await response.json();
+export const getTasksByBoardRequest = async (boardId) => {
+  return await apiFetch(`/task/getByBoard/${boardId}`, {
+    method: "GET"
+  });
 };
 
 export const createTaskRequest = async (task) => {

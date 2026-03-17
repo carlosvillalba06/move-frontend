@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
-import SearchBarAddAdvisor from "../../components/SearchBarAddAdvisor.jsx";
-import AdvisorToggleCard from "./cards/AdvisorToggleCard.jsx";
-import { getAllAdvisersRequest } from "../../services/adminService";
+import SearchBarAddStudent from "../../components/SearchBarAddStudent.jsx";
+import StudentToggleCard from "./cards/StudentToggleCard.jsx";
+import { getAllStudentsRequest } from "../../services/adviserService";
 import { disableUserRequest, enableUserRequest } from "../../services/authService.js";
 
-import AddAdvisor from "../users/AddAdvisor.jsx";
+import AddStudent from "../users/AddStudent.jsx";
 import SuccessAlert from "../modals/SuccessAlert.jsx";
 import ConfirmAlert from "../modals/ConfirmAlert.jsx";
 
-const AdvisorCardsToggleContainer = () => {
-
+const StudentCardsToggleContainer = () => {
   const [search, setSearch] = useState("");
-  const [advisors, setAdvisors] = useState([]);
+  const [students, setStudents] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -20,71 +19,59 @@ const AdvisorCardsToggleContainer = () => {
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
 
-  const filteredAdvisors = advisors.filter(a =>
-    (a.firstName + " " + a.lastName + " " + a.email)
+  const filteredStudents = students.filter(s =>
+    (s.firstName + " " + s.lastName + " " + s.email)
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
-  const loadAdvisors = async () => {
+  const loadStudents = async () => {
     try {
-      const res = await getAllAdvisersRequest();
-      setAdvisors(res);
+      const res = await getAllStudentsRequest();
+      setStudents(res);
     } catch (error) {
-      console.error("Error cargando asesores", error);
+      console.error("Error cargando estudiantes", error);
     }
   };
 
-  const handleAdvisorCreated = async () => {
-    await loadAdvisors();
+  const handleStudentCreated = async () => {
+    await loadStudents();
     setShowSuccess(true);
   };
 
   useEffect(() => {
-    loadAdvisors();
+    loadStudents();
   }, []);
 
   const handleDisable = (email) => {
-
-    setConfirmMessage("¿Seguro que deseas deshabilitar este asesor?");
-
+    setConfirmMessage("¿Seguro que deseas deshabilitar este estudiante?");
     setConfirmAction(() => async () => {
-
       await disableUserRequest(email);
-
-      setAdvisors(prev =>
-        prev.map(a =>
-          a.email === email ? { ...a, status: false } : a
+      setStudents(prev =>
+        prev.map(s =>
+          s.email === email ? { ...s, status: false } : s
         )
       );
-
       setConfirmOpen(false);
     });
-
     setConfirmOpen(true);
   };
 
   const handleEnable = (email) => {
-
-    setConfirmMessage("¿Seguro que deseas habilitar este asesor?");
-
+    setConfirmMessage("¿Seguro que deseas habilitar este estudiante?");
     setConfirmAction(() => async () => {
-
       await enableUserRequest(email);
-
-      setAdvisors(prev =>
-        prev.map(a =>
-          a.email === email ? { ...a, status: true } : a
+      setStudents(prev =>
+        prev.map(s =>
+          s.email === email ? { ...s, status: true } : s
         )
       );
-
       setConfirmOpen(false);
     });
-
     setConfirmOpen(true);
   };
 
-  const handleAddAdvisor = () => {
+  const handleAddStudent = () => {
     setIsModalOpen(true);
   };
 
@@ -94,29 +81,28 @@ const AdvisorCardsToggleContainer = () => {
 
   return (
     <div>
-
-      <SearchBarAddAdvisor
+      <SearchBarAddStudent
         setSearch={setSearch}
-        onAddAdvisor={handleAddAdvisor}
+        onAddStudent={handleAddStudent}
       />
 
       <br />
 
       <div className="grid">
-        {filteredAdvisors.map((advisor) => (
-          <AdvisorToggleCard
-            key={advisor.email}
-            advisor={advisor}
+        {filteredStudents.map((student) => (
+          <StudentToggleCard
+            key={student.email}
+            student={student}
             onEnable={handleEnable}
             onDisable={handleDisable}
           />
         ))}
       </div>
 
-      <AddAdvisor
+      <AddStudent
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onAdvisorCreated={handleAdvisorCreated}
+        onStudentCreated={handleStudentCreated}
       />
 
       <SuccessAlert
@@ -130,9 +116,8 @@ const AdvisorCardsToggleContainer = () => {
         onConfirm={confirmAction}
         onCancel={() => setConfirmOpen(false)}
       />
-
     </div>
   );
 };
 
-export default AdvisorCardsToggleContainer;
+export default StudentCardsToggleContainer;

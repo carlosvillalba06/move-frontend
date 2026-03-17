@@ -1,17 +1,17 @@
-import DashboardLayout from "../../components/layouts/DashboardLayout";
-import DashboardSidebar from "../../components/DashboardSidebar";
+import { Outlet } from "react-router-dom";
+import AdviserDashboardRoutes from "../../routes/AdviserDashboardRoutes";
+
 
 const AdvisorDashboard = () => {
 
   return (
+    <div>
+      <AdviserDashboardRoutes>
+        <Outlet/>
+      </AdviserDashboardRoutes>
+    </div>
 
-    <DashboardLayout sidebar={<DashboardSidebar role="ADVISOR" />}>
 
-      <div className="kanban-container">
-        {/* tablero kanban */}
-      </div>
-
-    </DashboardLayout>
 
   );
 

@@ -1,202 +1,366 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+
 import userPlaceholder from "../../assets/userMOVE.png";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import DashboardSidebar from "../../components/DashboardSidebar";
+
 import { useAuth } from "../../services/authContext";
-import { getAdminInformationRequest, uploadLogoRequest } from "../../services/adminService";
+import {
+  getAdminInformationRequest,
+  uploadLogoRequest
+} from "../../services/adminService";
 
 const Configuracion = () => {
 
-    const { user } = useAuth();
-    const role = user?.rol;
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-    const [adminData, setAdminData] = useState(null);
-    const [previewImage, setPreviewImage] = useState(userPlaceholder);
+  const role = user?.rol;
 
-    const fileInputRef = useRef(null);
+  const [adminData, setAdminData] = useState(null);
+  const [previewImage, setPreviewImage] = useState(userPlaceholder);
 
-    useEffect(() => {
+  const fileInputRef = useRef(null);
 
-        const fetchAdminInfo = async () => {
-            try {
+  // estados edición
+  const [editingName, setEditingName] = useState(false);
+  const [editingPassword, setEditingPassword] = useState(false);
 
-                const response = await getAdminInformationRequest();
-                const data = response?.data || response;
+  const [nameForm, setNameForm] = useState({
+    firstName: "",
+    lastName: ""
+  });
 
-                if (data) {
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: ""
+  });
 
-                    setAdminData(data);
+  const handleLogout = () => {   
+    logout();
+    navigate("/login");
+  };
 
-                    if (data.logoBase64) {
-                        setPreviewImage(`data:image/png;base64,${data.logoBase64}`);
-                    }
-                }
+  // cargar información admin
+  useEffect(() => {
 
-            } catch (error) {
-                console.error("Error obteniendo información del admin:", error);
-            }
-        };
+    const fetchAdminInfo = async () => {
 
-        if (role === "ADMIN") {
-            fetchAdminInfo();
+      try {
+
+        const response = await getAdminInformationRequest();
+        const data = response?.data || response;
+
+        if (data) {
+
+          setAdminData(data);
+
+          setNameForm({
+            firstName: data.firstName || "",
+            lastName: data.lastName || ""
+          });
+
+          if (data.logoBase64) {
+            setPreviewImage(`data:image/png;base64,${data.logoBase64}`);
+          }
         }
 
-    }, [role]);
-
-
-
-    const handleImageChange = async (e) => {
-
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-
-        reader.onloadend = () => {
-            setPreviewImage(reader.result);
-        };
-
-        reader.readAsDataURL(file);
-
-        try {
-
-            await uploadLogoRequest(file);
-
-        } catch (error) {
-            console.error("Error subiendo logo:", error);
-        }
-
+      } catch (error) {
+        console.error("Error obteniendo información del admin:", error);
+      }
     };
 
+    if (role === "ADMIN") {
+      fetchAdminInfo();
+    }
 
+  }, [role]);
 
-    return (
-        <DashboardLayout sidebar={<DashboardSidebar role={role} />}>
+  // cambiar imagen
+  const handleImageChange = async (e) => {
 
-            <div className="config-container">
+    const file = e.target.files[0];
+    if (!file) return;
 
-                <h1>Configuración</h1>
+    const reader = new FileReader();
 
-                <section className="config-section">
+    reader.onloadend = () => {
+      setPreviewImage(reader.result);
+    };
 
-                    <h2>Imagen de perfil</h2>
+    reader.readAsDataURL(file);
 
-                    <div className="profile-edit">
+    try {
 
-                        <img
-                            src={previewImage}
-                            alt="Perfil"
-                            className="profile-img"
-                        />
+      await uploadLogoRequest(file);
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            hidden
-                            accept="image/*"
-                            onChange={handleImageChange}
-                        />
+    } catch (error) {
+      console.error("Error subiendo logo:", error);
+    }
 
-                        <button
-                            className="text-btn"
-                            onClick={() => fileInputRef.current.click()}
-                        >
-                            Cambiar imagen
-                        </button>
+  };
 
-                    </div>
+  // cambiar inputs nombre
+  const handleNameChange = (e) => {
 
-                </section>
+    setNameForm({
+      ...nameForm,
+      [e.target.name]: e.target.value
+    });
 
-                <hr />
+  };
 
-                <section className="config-section">
+  // guardar nombre
+  const handleSaveName = async () => {
 
-                    <div className="section-header">
+    try {
 
-                        <h2>Nombre</h2>
+      // aquí llamarías tu endpoint
+      // await updateAdminNameRequest(nameForm);
 
-                        <button className="text-btn">
-                            Editar
-                        </button>
+      setAdminData(prev => ({
+        ...prev,
+        firstName: nameForm.firstName,
+        lastName: nameForm.lastName
+      }));
 
-                    </div>
+      setEditingName(false);
 
-                    <div className="input-field">
+    } catch (error) {
+      console.error("Error actualizando nombre", error);
+    }
 
-                        <label>Nombre(s)</label>
+  };
 
-                        <input
-                            type="text"
-                            value={adminData?.firstName || ""}
-                            readOnly
-                        />
+  // cambiar contraseña
+  const handlePasswordChange = (e) => {
 
-                    </div>
+    setPasswordForm({
+      ...passwordForm,
+      [e.target.name]: e.target.value
+    });
 
-                    <div className="input-field">
+  };
 
-                        <label>Apellidos</label>
+  const handleSavePassword = async () => {
 
-                        <input
-                            type="text"
-                            value={adminData?.lastName || ""}
-                            readOnly
-                        />
+    try {
 
-                    </div>
+      // await changePasswordRequest(passwordForm)
 
-                </section>
+      setEditingPassword(false);
 
-                <hr />
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: ""
+      });
 
-                <section className="config-section">
+    } catch (error) {
+      console.error("Error cambiando contraseña", error);
+    }
 
-                    <h2>Seguridad</h2>
+  };
 
-                    <div className="input-field">
+  return (
 
-                        <label>Correo</label>
+    <DashboardLayout sidebar={<DashboardSidebar role={role} />}>
 
-                        <input
-                            type="email"
-                            value={user?.email || ""}
-                            readOnly
-                        />
+      <div className="config-container">
 
-                    </div>
+        <h1>Configuración</h1>
 
-                    <div className="input-field">
+        {/* PERFIL */}
 
-                        <label>Contraseña</label>
+        <section className="config-section">
 
-                        <div className="password-wrapper">
+          <h2>Imagen de perfil</h2>
 
-                            <input
-                                type="password"
-                                value="********"
-                                readOnly
-                            />
+          <div className="profile-edit">
 
-                            <span className="eye">👁</span>
+            <img
+              src={previewImage}
+              alt="Perfil"
+              className="profile-img"
+            />
 
-                        </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              hidden
+              accept="image/*"
+              onChange={handleImageChange}
+            />
 
-                    </div>
+            <button
+              className="text-btn"
+              onClick={() => fileInputRef.current.click()}
+            >
+              Cambiar imagen
+            </button>
 
-                    <button className="text-btn">
-                        Cambiar contraseña
-                    </button>
+          </div>
 
-                </section>
+        </section>
 
+        <hr />
 
-                
+        {/* NOMBRE */}
 
-            </div>
+        <section className="config-section">
 
-        </DashboardLayout>
-    );
+          <div className="section-header">
+
+            <h2>Nombre</h2>
+
+            {!editingName ? (
+
+              <button
+                className="text-btn"
+                onClick={() => setEditingName(true)}
+              >
+                Editar
+              </button>
+
+            ) : (
+
+              <button
+                className="text-btn"
+                onClick={handleSaveName}
+              >
+                Guardar cambios
+              </button>
+
+            )}
+
+          </div>
+
+          <div className="input-field">
+
+            <label>Nombre(s)</label>
+
+            <input
+              type="text"
+              name="firstName"
+              value={nameForm.firstName}
+              onChange={handleNameChange}
+              disabled={!editingName}
+            />
+
+          </div>
+
+          <div className="input-field">
+
+            <label>Apellidos</label>
+
+            <input
+              type="text"
+              name="lastName"
+              value={nameForm.lastName}
+              onChange={handleNameChange}
+              disabled={!editingName}
+            />
+
+          </div>
+
+        </section>
+
+        <hr />
+
+        {/* SEGURIDAD */}
+
+        <section className="config-section">
+
+          <div className="section-header">
+
+            <h2>Seguridad</h2>
+
+            {!editingPassword ? (
+
+              <button
+                className="text-btn"
+                onClick={() => setEditingPassword(true)}
+              >
+                Cambiar contraseña
+              </button>
+
+            ) : (
+
+              <button
+                className="text-btn"
+                onClick={handleSavePassword}
+              >
+                Guardar contraseña
+              </button>
+
+            )}
+
+          </div>
+
+          <div className="input-field">
+
+            <label>Correo</label>
+
+            <input
+              type="email"
+              value={user?.email || ""}
+              readOnly
+            />
+
+          </div>
+
+          {editingPassword && (
+
+            <>
+              <div className="input-field">
+
+                <label>Contraseña actual</label>
+
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={passwordForm.currentPassword}
+                  onChange={handlePasswordChange}
+                />
+
+              </div>
+
+              <div className="input-field">
+
+                <label>Nueva contraseña</label>
+
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={passwordForm.newPassword}
+                  onChange={handlePasswordChange}
+                />
+
+              </div>
+            </>
+
+          )}
+
+        </section>
+
+        {/* LOGOUT */}
+
+        <div className="logout-wrapper">
+
+          <button
+            className="logout-btn"
+            onClick={handleLogout}
+          >
+            Cerrar sesión
+          </button>
+
+        </div>
+
+      </div>
+
+    </DashboardLayout>
+
+  );
 };
 
 export default Configuracion;

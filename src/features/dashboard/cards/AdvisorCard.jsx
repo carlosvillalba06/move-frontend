@@ -6,7 +6,7 @@ const AdvisorCard = ({ advisor }) => {
   const navigate = useNavigate();
 
   const goToBoard = () => {
-    navigate(`/advisors/${advisor.id}/kanban`);
+    navigate(`/admin/dashboard/tablero/${advisor.boardId}`);
   };
 
   return (

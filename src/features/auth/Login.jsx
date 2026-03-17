@@ -81,7 +81,7 @@ const Login = () => {
       const role = storedSession?.user?.rol?.toLowerCase();
 
       if (role === "admin") navigate("/admin/dashboard");
-      else if (role === "advisor") navigate("/advisor/dashboard");
+      else if (role === "adviser") navigate("/advisor/dashboard");
       else navigate("/dashboard");
 
     } catch (err) {
