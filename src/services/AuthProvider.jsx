@@ -36,7 +36,8 @@ function AuthProvider({ children }) {
     };
     const logout = () => {
         setSession(null)
-        localStorage.removeItem('session')
+        localStorage.removeItem('session'),
+        localStorage.removeItem('token')
     }
 
 

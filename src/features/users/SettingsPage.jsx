@@ -37,7 +37,7 @@ const Configuracion = () => {
     newPassword: ""
   });
 
-  const handleLogout = () => {   
+  const handleLogout = () => {
     logout();
     navigate("/login");
   };
@@ -49,6 +49,7 @@ const Configuracion = () => {
 
       try {
 
+        
         const response = await getAdminInformationRequest();
         const data = response?.data || response;
 
@@ -77,7 +78,6 @@ const Configuracion = () => {
 
   }, [role]);
 
-  // cambiar imagen
   const handleImageChange = async (e) => {
 
     const file = e.target.files[0];
@@ -95,10 +95,16 @@ const Configuracion = () => {
 
       await uploadLogoRequest(file);
 
+      const response = await getAdminInformationRequest();
+      const data = response?.data || response;
+
+      if (data.logoBase64) {
+        setPreviewImage(`data:image/png;base64,${data.logoBase64}`);
+      }
+
     } catch (error) {
       console.error("Error subiendo logo:", error);
     }
-
   };
 
   // cambiar inputs nombre

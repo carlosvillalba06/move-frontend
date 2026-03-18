@@ -55,3 +55,11 @@ export const uploadLogoRequest = async (file) => {
 
   return response.json();
 };
+
+// Actualizar información del admin
+export const updateAdminInformationRequest = async (adminData) => {
+  return await apiFetch(`${API_URL}/updateAdminInformation`, {
+    method: "POST",
+    body: JSON.stringify(adminData)
+  });
+};
