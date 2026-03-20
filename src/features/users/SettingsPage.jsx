@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import userPlaceholder from "../../assets/userMOVE.png";
@@ -6,24 +6,30 @@ import DashboardLayout from "../../components/layouts/DashboardLayout";
 import DashboardSidebar from "../../components/DashboardSidebar";
 
 import { useAuth } from "../../services/authContext";
+
 import {
   getAdminInformationRequest,
-  uploadLogoRequest
+  uploadLogoRequest,
+  updateAdminInformationRequest
 } from "../../services/adminService";
 
-const Configuracion = () => {
+import {
+  getAdviserInformationRequest,
+  uploadLogoAdviserRequest,
+  updateAdviserInformationRequest
+} from "../../services/adviserService";
 
+const Configuracion = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const role = user?.rol;
 
-  const [adminData, setAdminData] = useState(null);
+  const [data, setData] = useState(null);
   const [previewImage, setPreviewImage] = useState(userPlaceholder);
 
   const fileInputRef = useRef(null);
 
-  // estados edición
   const [editingName, setEditingName] = useState(false);
   const [editingPassword, setEditingPassword] = useState(false);
 
@@ -37,159 +43,116 @@ const Configuracion = () => {
     newPassword: ""
   });
 
+  const service = useMemo(() => {
+    return role === "ADMIN"
+      ? {
+          getInfo: getAdminInformationRequest,
+          upload: uploadLogoRequest,
+          update: updateAdminInformationRequest
+        }
+      : {
+          getInfo: getAdviserInformationRequest,
+          upload: uploadLogoAdviserRequest,
+          update: updateAdviserInformationRequest
+        };
+  }, [role]);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  // cargar información admin
   useEffect(() => {
-
-    const fetchAdminInfo = async () => {
-
+    const fetchInfo = async () => {
       try {
+        const response = await service.getInfo();
+        const info = response?.data || response;
 
-        
-        const response = await getAdminInformationRequest();
-        const data = response?.data || response;
-
-        if (data) {
-
-          setAdminData(data);
-
+        if (info) {
+          setData(info);
           setNameForm({
-            firstName: data.firstName || "",
-            lastName: data.lastName || ""
+            firstName: info.firstName || "",
+            lastName: info.lastName || ""
           });
 
-          if (data.logoBase64) {
-            setPreviewImage(`data:image/png;base64,${data.logoBase64}`);
+          if (info.logoBase64) {
+            setPreviewImage(`data:image/png;base64,${info.logoBase64}`);
           }
         }
-
       } catch (error) {
-        console.error("Error obteniendo información del admin:", error);
+        console.error("Error obteniendo información:", error);
       }
     };
 
-    if (role === "ADMIN") {
-      fetchAdminInfo();
-    }
-
-  }, [role]);
+    if (role) fetchInfo();
+  }, [role, service]);
 
   const handleImageChange = async (e) => {
-
-    const file = e.target.files[0];
+    const file = e.target.files;
     if (!file) return;
 
     const reader = new FileReader();
-
     reader.onloadend = () => {
       setPreviewImage(reader.result);
     };
-
     reader.readAsDataURL(file);
 
     try {
-
-      await uploadLogoRequest(file);
-
-      const response = await getAdminInformationRequest();
-      const data = response?.data || response;
-
-      if (data.logoBase64) {
-        setPreviewImage(`data:image/png;base64,${data.logoBase64}`);
-      }
-
+      await service.upload(file);
     } catch (error) {
-      console.error("Error subiendo logo:", error);
+      console.error("Error subiendo imagen:", error);
     }
   };
 
-  // cambiar inputs nombre
   const handleNameChange = (e) => {
-
     setNameForm({
       ...nameForm,
       [e.target.name]: e.target.value
     });
-
   };
 
-  // guardar nombre
   const handleSaveName = async () => {
-
     try {
-
-      // aquí llamarías tu endpoint
-      // await updateAdminNameRequest(nameForm);
-
-      setAdminData(prev => ({
+      await service.update(nameForm);
+      setData((prev) => ({
         ...prev,
         firstName: nameForm.firstName,
         lastName: nameForm.lastName
       }));
-
       setEditingName(false);
-
     } catch (error) {
       console.error("Error actualizando nombre", error);
     }
-
   };
 
-  // cambiar contraseña
   const handlePasswordChange = (e) => {
-
     setPasswordForm({
       ...passwordForm,
       [e.target.name]: e.target.value
     });
-
   };
 
   const handleSavePassword = async () => {
-
     try {
-
-      // await changePasswordRequest(passwordForm)
-
       setEditingPassword(false);
-
       setPasswordForm({
         currentPassword: "",
         newPassword: ""
       });
-
     } catch (error) {
       console.error("Error cambiando contraseña", error);
     }
-
   };
 
   return (
-
     <DashboardLayout sidebar={<DashboardSidebar role={role} />}>
-
       <div className="config-container">
-
-        <h1>Configuración</h1>
-
-        {/* PERFIL */}
+        <h1>Configuración {role === "ADMIN" ? "Admin" : "Asesor"}</h1>
 
         <section className="config-section">
-
           <h2>Imagen de perfil</h2>
-
           <div className="profile-edit">
-
-            <img
-              src={previewImage}
-              alt="Perfil"
-              className="profile-img"
-            />
-
+            <img src={previewImage} alt="Perfil" className="profile-img" />
             <input
               type="file"
               ref={fileInputRef}
@@ -197,54 +160,33 @@ const Configuracion = () => {
               accept="image/*"
               onChange={handleImageChange}
             />
-
             <button
               className="text-btn"
               onClick={() => fileInputRef.current.click()}
             >
               Cambiar imagen
             </button>
-
           </div>
-
         </section>
 
         <hr />
 
-        {/* NOMBRE */}
-
         <section className="config-section">
-
           <div className="section-header">
-
             <h2>Nombre</h2>
-
             {!editingName ? (
-
-              <button
-                className="text-btn"
-                onClick={() => setEditingName(true)}
-              >
+              <button className="text-btn" onClick={() => setEditingName(true)}>
                 Editar
               </button>
-
             ) : (
-
-              <button
-                className="text-btn"
-                onClick={handleSaveName}
-              >
+              <button className="text-btn" onClick={handleSaveName}>
                 Guardar cambios
               </button>
-
             )}
-
           </div>
 
           <div className="input-field">
-
             <label>Nombre(s)</label>
-
             <input
               type="text"
               name="firstName"
@@ -252,13 +194,10 @@ const Configuracion = () => {
               onChange={handleNameChange}
               disabled={!editingName}
             />
-
           </div>
 
           <div className="input-field">
-
             <label>Apellidos</label>
-
             <input
               type="text"
               name="lastName"
@@ -266,106 +205,65 @@ const Configuracion = () => {
               onChange={handleNameChange}
               disabled={!editingName}
             />
-
           </div>
-
         </section>
 
         <hr />
 
-        {/* SEGURIDAD */}
-
         <section className="config-section">
-
           <div className="section-header">
-
             <h2>Seguridad</h2>
-
             {!editingPassword ? (
-
               <button
                 className="text-btn"
                 onClick={() => setEditingPassword(true)}
               >
                 Cambiar contraseña
               </button>
-
             ) : (
-
-              <button
-                className="text-btn"
-                onClick={handleSavePassword}
-              >
+              <button className="text-btn" onClick={handleSavePassword}>
                 Guardar contraseña
               </button>
-
             )}
-
           </div>
 
           <div className="input-field">
-
             <label>Correo</label>
-
-            <input
-              type="email"
-              value={user?.email || ""}
-              readOnly
-            />
-
+            <input type="email" value={user?.email || ""} readOnly />
           </div>
 
           {editingPassword && (
-
             <>
               <div className="input-field">
-
                 <label>Contraseña actual</label>
-
                 <input
                   type="password"
                   name="currentPassword"
                   value={passwordForm.currentPassword}
                   onChange={handlePasswordChange}
                 />
-
               </div>
 
               <div className="input-field">
-
                 <label>Nueva contraseña</label>
-
                 <input
                   type="password"
                   name="newPassword"
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
                 />
-
               </div>
             </>
-
           )}
-
         </section>
 
-        {/* LOGOUT */}
-
         <div className="logout-wrapper">
-
-          <button
-            className="logout-btn"
-            onClick={handleLogout}
-          >
+          <button className="logout-btn" onClick={handleLogout}>
             Cerrar sesión
           </button>
-
         </div>
-
       </div>
-
     </DashboardLayout>
-
   );
 };
 
