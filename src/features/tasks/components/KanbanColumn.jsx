@@ -1,9 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import TaskCard from "./TaskCard";
+import AddTask from "../../modals/AddTask";
 
-const KanbanColumn = ({ title, status, tasks, addTask }) => {
+const KanbanColumn = ({ 
+  title, 
+  status, 
+  tasks, 
+  user, 
+  advisors, 
+  colors,
+  createTask // función para guardar
+}) => {
+
+  const [openModal, setOpenModal] = useState(false);
 
   const columnTasks = tasks.filter(task => task.status === status);
+
+  // Guardar tarea
+  const handleSaveTask = (formData) => {
+    // aquí le agregas el status automáticamente
+    formData.append("status", status);
+
+    createTask(formData);
+    setOpenModal(false);
+  };
 
   return (
     <div className="kanban-column">
@@ -12,7 +32,7 @@ const KanbanColumn = ({ title, status, tasks, addTask }) => {
 
       <button
         className="add-task"
-        onClick={() => addTask(status)}
+        onClick={() => setOpenModal(true)}
       >
         + Agregar tarea
       </button>
@@ -22,6 +42,17 @@ const KanbanColumn = ({ title, status, tasks, addTask }) => {
           <TaskCard key={task.id} task={task} />
         ))}
       </div>
+
+      {/* Modal */}
+      {openModal && (
+        <AddTask 
+          onClose={() => setOpenModal(false)}
+          user={user}
+          advisors={advisors}
+          colorsFromBackend={colors}
+          onSave={handleSaveTask}
+        />
+      )}
 
     </div>
   );
