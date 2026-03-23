@@ -1,8 +1,9 @@
+/* Kanban */
 .kanban-board {
   display: flex;
   gap: 15px;
   padding: 30px;
-  background: #cccccc; 
+  background: #cccccc;
   border-radius: 30px;
   min-height: 80vh;
   margin: 20px;
@@ -10,7 +11,7 @@
 
 .kanban-column {
   flex: 1;
-  background: #e0e0e0; 
+  background: #e0e0e0;
   border-radius: 20px;
   padding: 20px 15px;
   display: flex;
@@ -25,15 +26,16 @@
   color: #333;
 }
 
+/* Boton */
 .add-task {
   width: 100%;
   border: none;
   padding: 12px;
   border-radius: 12px;
-  background: #f0f0f0; 
+  background: #f0f0f0;
   color: #666;
   font-size: 15px;
-  text-align: left; 
+  text-align: left;
   padding-left: 20px;
   cursor: pointer;
   margin-bottom: 20px;
@@ -44,6 +46,7 @@
   background: #ffffff;
 }
 
+/* Tasks */
 .task-list {
   display: flex;
   flex-direction: column;
@@ -53,7 +56,19 @@
 .task-card {
   background: white;
   border-radius: 15px;
-  padding: 30px 20px; 
+  padding: 30px 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   min-height: 100px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kanban-board {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .kanban-column {
+    width: 100%;
+  }
 }

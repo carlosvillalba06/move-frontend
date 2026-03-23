@@ -66,3 +66,10 @@ export const getAdviserInformationRequest = async () => {
     method: "GET"
   });
 };
+
+export const addTaskRequest = async (formData) => {
+  return await apiFetch(`/adviser/addTask`, {
+    method: "POST",
+    body: formData
+  });
+};

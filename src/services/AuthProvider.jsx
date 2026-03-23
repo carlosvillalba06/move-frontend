@@ -1,59 +1,107 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./authContext";
 import { loginRequest } from "./authService";
+import { getAdviserInformationRequest } from "./adviserService";
+import { getAdminInformationRequest } from "./adminService";
 
 
 function AuthProvider({ children }) {
-    const [session, setSession] = useState(null)
+  const [session, setSession] = useState(null)
 
-    useEffect(() => {
-        const storedSession = localStorage.getItem("session");
+  useEffect(() => {
+    const loadSession = async () => {
+      const storedSession = localStorage.getItem("session");
 
-        if (storedSession) {
-            setSession(JSON.parse(storedSession));
+      if (!storedSession) return;
+
+      const parsed = JSON.parse(storedSession);
+
+      try {
+        let fullUserInfo;
+
+        if (parsed.user?.rol === "ADMIN") {
+          const res = await getAdminInformationRequest();
+          fullUserInfo = res?.data || res;
+        } else {
+          const res = await getAdviserInformationRequest();
+          fullUserInfo = res?.data || res;
         }
-    }, []);
 
-    const login = async (username, password) => {
-        try {
-            const data = await loginRequest(username, password);
+        const updatedSession = {
+          ...parsed,
+          user: {
+            ...parsed.user,
+            ...fullUserInfo
+          }
+        };
 
-            if (!data) return false;
+        setSession(updatedSession);
+        localStorage.setItem("session", JSON.stringify(updatedSession));
 
-            const sessionData = {
-                token: data.token,
-                user: data.user
-            };
-
-            localStorage.setItem("session", JSON.stringify(sessionData));
-            setSession(sessionData);
-
-            return true;
-        } catch (error) {
-            console.error("Login error", error);
-            return false;
-        }
+      } catch (error) {
+        setSession(parsed);
+      }
     };
-    const logout = () => {
-        setSession(null)
-        localStorage.removeItem('session'),
-        localStorage.removeItem('token')
+
+    loadSession();
+  }, []);
+
+  const login = async (username, password) => {
+    try {
+      const data = await loginRequest(username, password);
+      if (!data) return false;
+
+      let fullUserInfo = data.user;
+      try {
+        if (data.user?.rol === "ADMIN") {
+          const res = await getAdminInformationRequest();
+          fullUserInfo = res?.data || res;
+        } else {
+          const res = await getAdviserInformationRequest();
+          fullUserInfo = res?.data || res;
+        }
+      } catch (error) {
+        console.error("Error real:", error);
+      }
+
+      const sessionData = {
+        token: data.token,
+        user: {
+          ...data.user,
+          ...fullUserInfo
+        }
+      };
+
+      localStorage.setItem("session", JSON.stringify(sessionData));
+      setSession(sessionData);
+
+      return true;
+    } catch (error) {
+      console.error("Login error", error);
+      return false;
     }
+  };
+
+  const logout = () => {
+    setSession(null)
+    localStorage.removeItem('session'),
+      localStorage.removeItem('token')
+  }
 
 
-    return (
-        <AuthContext.Provider
-            value={{
-                session,
-                user: session?.user,
-                token: session?.token,
-                login,
-                logout,
-                isLoggedIn: !!session
-            }}
-        >{children}
-        </AuthContext.Provider>
-    )
+  return (
+    <AuthContext.Provider
+      value={{
+        session,
+        user: session?.user,
+        token: session?.token,
+        login,
+        logout,
+        isLoggedIn: !!session
+      }}
+    >{children}
+    </AuthContext.Provider>
+  )
 }
 
 export default AuthProvider;

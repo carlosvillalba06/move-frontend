@@ -13,7 +13,10 @@ const StudentCardsToggleContainer = () => {
   const [students, setStudents] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [successConfig, setSuccessConfig] = useState({
+    isOpen: false,
+    message: ""
+  });
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -36,7 +39,10 @@ const StudentCardsToggleContainer = () => {
 
   const handleStudentCreated = async () => {
     await loadStudents();
-    setShowSuccess(true);
+    setSuccessConfig({
+      isOpen: true,
+      message: "Estudiante registrado con éxito"
+    });
   };
 
   useEffect(() => {

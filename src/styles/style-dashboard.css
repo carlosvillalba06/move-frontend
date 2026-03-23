@@ -1,3 +1,4 @@
+/* Layout */
 .dashboard-layout {
   display: flex;
   flex-direction: column;
@@ -18,6 +19,8 @@
   background-color: #ffffff;
   overflow-y: auto;
 }
+
+/* Navbar */
 .admin-navbar {
   width: 100%;
   height: 70px;
@@ -64,9 +67,11 @@
 .user-circle img {
   width: 100%;
   height: 100%;
-  object-fit: cover; 
+  object-fit: cover;
   display: block;
 }
+
+/* Sidebar */
 .dashboard-sidebar {
   width: 260px;
   background-color: #d6d6d6;
@@ -94,76 +99,78 @@
   background-color: #c5c5c5;
   transform: translateX(5px);
 }
+
 .dashboard-sidebar button.active {
   background-color: #b0b0b0;
   border-color: #888;
   color: #000;
 }
+
 .sidebar-footer {
-  margin-top: auto; 
+  margin-top: auto;
 }
 
-.config-container{
-  max-width:600px;
-  margin:auto;
-  padding:30px;
+/* Config */
+.config-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 30px;
 }
 
-.config-section{
-  margin:25px 0;
+.config-section {
+  margin: 25px 0;
 }
 
-.section-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.profile-edit{
-  display:flex;
-  align-items:center;
-  gap:20px;
+.profile-edit {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.profile-img{
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  object-fit:cover;
+.profile-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.input-field{
-  display:flex;
-  flex-direction:column;
-  margin-top:15px;
+.input-field {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
 }
 
-.input-field input{
-  padding:8px;
-  border-radius:6px;
-  border:1px solid #ccc;
+.input-field input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
-.password-wrapper{
-  display:flex;
-  align-items:center;
+.password-wrapper {
+  display: flex;
+  align-items: center;
 }
 
-.eye{
-  margin-left:10px;
-  cursor:pointer;
+.eye {
+  margin-left: 10px;
+  cursor: pointer;
 }
 
-.text-btn{
-  background:none;
-  border:none;
-  color:#007bff;
-  cursor:pointer;
-  padding:0;
+.text-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  padding: 0;
 }
 
-
-/*CARDS*/
+/* Cards */
 .card {
   background: white;
   border-radius: 8px;
@@ -174,9 +181,22 @@
   min-height: 120px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+
+.card span {
+  font-size: 18px;
+}
+
+.card h2 {
+  font-size: 16px;
+  font-weight: 400;
+  margin: 0;
+}
+
+
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 750px);
+  grid-template-columns: repeat(2, 1fr);
   border-radius: 5px;
   gap: 20px;
   padding: 40px;
@@ -190,29 +210,7 @@
   margin-top: 5px;
 }
 
-.card span {
-  font-size: 18px;
-}
-
-.card h2 {
-  font-size: 16px;
-  font-weight: 400;
-  margin: 0;
-}
-
-button {
-  align-self: flex-end;
-  background: black;
-  color: white;
-  border: none;
-  padding: 8px 25px;
-  border-radius: 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: -10px;
-}
-
-
+/* Toggle */
 .toggle-card {
   background: white;
   display: flex;
@@ -243,6 +241,19 @@ button {
   color: #888;
 }
 
+/* Boton */
+button {
+  align-self: flex-end;
+  background: black;
+  color: white;
+  border: none;
+  padding: 8px 25px;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: -10px;
+}
+
 button {
   border: none;
   padding: 6px 15px;
@@ -254,49 +265,74 @@ button {
 }
 
 .btn-disable {
-  background-color: #600; 
+  background-color: #600;
 }
 
 .btn-enable {
-  background-color: #042; 
+  background-color: #042;
 }
+
 .add-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 9px 16px;
-  /* Fondo gris claro para coincidir con la barra de búsqueda en la imagen */
-  background: #EAEAEA; 
-  /* Texto y icono de color gris oscuro, no blanco */
-  color: #616161; 
+  background: #EAEAEA;
+  color: #616161;
   border: none;
-  border-radius: 6px; 
+  border-radius: 6px;
   cursor: pointer;
   font-family: 'Montserrat', sans-serif;
   font-weight: 500;
   font-size: 14px;
-  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .logout-wrapper {
-    margin-top: 50px; /* Espacio extra para separarlo de las secciones */
-    display: flex;
-    justify-content: center; /* Centrado para que destaque como acción global */
-    padding-bottom: 40px;
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 40px;
 }
 
 .logout-btn {
-    background-color: #000; 
-    color: #fff;
-    padding: 12px 60px;
-    border: none;
-    border-radius: 10px; 
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  background-color: #000;
+  color: #fff;
+  padding: 12px 60px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 .logout-btn:hover {
-    background-color: #333; /* Un gris oscuro al pasar el mouse */
+  background-color: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-body {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .dashboard-content {
+    padding: 20px;
+  }
+
+   .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .config-container {
+    padding: 20px;
+  }
 }

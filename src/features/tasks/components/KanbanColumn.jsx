@@ -1,27 +1,20 @@
 import React, { useState } from "react";
 import TaskCard from "./TaskCard";
 import AddTask from "../../modals/AddTask";
+import TaskDetailsModal from "../../modals/TaskDetailsModal";
 
-const KanbanColumn = ({ 
-  title, 
-  status, 
-  tasks, 
-  user, 
-  advisors, 
-  colors,
-  createTask // función para guardar
-}) => {
+const KanbanColumn = ({ title, status, tasks, advisors = [], onCreateTask, onMoveTask }) => {
 
   const [openModal, setOpenModal] = useState(false);
+  const [isOver, setIsOver] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
-  const columnTasks = tasks.filter(task => task.status === status);
+  const columnTasks = Array.isArray(tasks)
+    ? tasks.filter(task => task.statusKanban === status)
+    : [];
 
-  // Guardar tarea
-  const handleSaveTask = (formData) => {
-    // aquí le agregas el status automáticamente
-    formData.append("status", status);
-
-    createTask(formData);
+  const handleSaveTask = async (formData) => {
+    await onCreateTask(formData, status);
     setOpenModal(false);
   };
 
@@ -37,20 +30,68 @@ const KanbanColumn = ({
         + Agregar tarea
       </button>
 
-      <div className="task-list">
+      <div
+        className={`task-list ${isOver ? "drag-over" : ""}`}
+        style={{ minHeight: "150px" }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsOver(true);
+        }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setIsOver(true);
+        }}
+        onDragLeave={(e) => {
+          setIsOver(false);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+
+          const taskId = e.dataTransfer.getData("taskId");
+
+          console.log("DROP en", status, "task:", taskId);
+
+          if (!taskId) return;
+
+          onMoveTask(taskId, status);
+          setIsOver(false);
+        }}
+      >
+        {columnTasks.length === 0 && (
+          <p style={{ textAlign: "center", color: "#999" }}>
+            Suelta aquí
+          </p>
+        )}
+
         {columnTasks.map(task => (
-          <TaskCard key={task.id} task={task} />
+          <TaskCard key={task.id} task={task} onOpenDetails={(task) => { setSelectedTask(task) }} />
         ))}
       </div>
 
-      {/* Modal */}
       {openModal && (
-        <AddTask 
+        <AddTask
           onClose={() => setOpenModal(false)}
-          user={user}
           advisors={advisors}
-          colorsFromBackend={colors}
           onSave={handleSaveTask}
+        />
+      )}
+
+      {selectedTask && (
+        <TaskDetailsModal
+          task={selectedTask}
+          advisors={advisors}
+          onClose={() => setSelectedTask(null)}
+          onSave={(updatedTask) => {
+            console.log("Actualizar:", updatedTask);
+
+            setTasks(prev =>
+              prev.map(t =>
+                t.id === updatedTask.id ? updatedTask : t
+              )
+            );
+
+            setSelectedTask(null);
+          }}
         />
       )}
 

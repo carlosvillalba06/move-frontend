@@ -1,13 +1,14 @@
 const API_URL = "http://localhost:8080/api";
 
+
 export const apiFetch = async (endpoint, options = {}) => {
-
   try {
-
     const token = localStorage.getItem("token");
 
+    const isFormData = options.body instanceof FormData;
+
     const headers = {
-      ...(options.body && { "Content-Type": "application/json" }),
+      ...(!isFormData && options.body && { "Content-Type": "application/json" }),
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers
     };
@@ -28,7 +29,6 @@ export const apiFetch = async (endpoint, options = {}) => {
     }
 
     if (!response.ok) {
-
       if (response.status === 401) {
         localStorage.removeItem("token");
         window.location.href = "/login";
@@ -40,9 +40,6 @@ export const apiFetch = async (endpoint, options = {}) => {
     return data;
 
   } catch (error) {
-
     throw new Error(error.message || "Error de conexión con el servidor");
-
   }
-
 };

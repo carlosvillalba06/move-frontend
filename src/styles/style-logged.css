@@ -1,3 +1,4 @@
+/* Global */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,6 +6,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Login */
 .login-container {
   display: flex;
   justify-content: center;
@@ -96,6 +98,7 @@ h1 {
   color: #000;
 }
 
+/* Boton */
 .button-primary {
   width: 100%;
   padding: 15px;
@@ -114,6 +117,7 @@ h1 {
   background-color: #333;
 }
 
+/* Codigo */
 .code-input-container {
   display: flex;
   gap: 12px;
@@ -144,14 +148,15 @@ h1 {
   color: #a0a0a0;
 }
 
+/* Navbar */
 .navbar {
   width: 100%;
   background-color: #000000;
-  height: 80px; 
+  height: 80px;
   display: flex;
   align-items: center;
   padding: 0 20px;
-  position: fixed; 
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
@@ -162,27 +167,27 @@ h1 {
   align-items: center;
   width: 100%;
   max-width: 1200px;
-  margin: 0 ;
+  margin: 0;
   justify-content: flex-start;
 }
 
 .navbar-logo {
-  height: 50px; 
+  height: 50px;
   width: auto;
   object-fit: contain;
 }
 
+/* Search */
 .search-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background-color: #e6e6e6; /* Gris claro de la imagen */
+  gap: 10px;
+  background-color: #e6e6e6;
   padding: 8px 20px;
   border-radius: 12px;
   width: 100%;
   max-width: 800px;
 }
-
 .search-input {
   display: flex;
   align-items: center;
@@ -214,4 +219,24 @@ h1 {
 .filter-button span {
   font-size: 16px;
   font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-box {
+    max-width: 90%;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .search-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .navbar {
+    height: 70px;
+  }
 }

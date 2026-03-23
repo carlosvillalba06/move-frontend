@@ -14,7 +14,11 @@ const AdvisorCardsToggleContainer = () => {
   const [advisors, setAdvisors] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  
+  const [ successConfig, setSuccessConfig] = useState({
+    isOpen: false,
+    message: ""
+  });
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -37,7 +41,10 @@ const AdvisorCardsToggleContainer = () => {
 
   const handleAdvisorCreated = async () => {
     await loadAdvisors();
-    setShowSuccess(true);
+    setSuccessConfig({
+      isOpen: true,
+      message: "Asesor registrado con éxito"
+    });
   };
 
   useEffect(() => {
@@ -120,8 +127,9 @@ const AdvisorCardsToggleContainer = () => {
       />
 
       <SuccessAlert
-        isOpen={showSuccess}
-        onClose={() => setShowSuccess(false)}
+        isOpen={successConfig.isOpen}
+        mensage={successConfig.message}
+        onClose={() => setSuccessConfig(prev => ({ ...prev, isOpen:false}))}
       />
 
       <ConfirmAlert

@@ -1,141 +1,190 @@
 import { useState } from "react";
+import { useAuth } from "./../../services/authContext";
 
-const AddTask = ({ onClose, user, advisors = [], colorsFromBackend = [], onSave }) => {
+const AddTask = ({ onClose, advisors = [], onSave }) => {
+
   const [form, setForm] = useState({
-    nameTask: "",
-    assignedTo: "",
-    tagColor: "",
-    deposito: "",
-    prioridad: "",
-    fechaInicio: "",
-    fechaFin: "",
-    notas: "",
-    archivos: []
+    name: "",
+    studentIDs: [],
+    color: "",
+    statusKanban: "",
+    priority: "",
+    startDate: "",
+    limitDate: "",
+    description: "",
+    files: []
   });
+
+  const { user: authUser } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    setForm({ ...form, archivos: e.target.files });
+  const handleStudentChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions);
+    const values = selectedOptions.map(option => Number(option.value));
+
+    setForm({ ...form, studentIDs: values });
   };
 
+  const handleFileChange = (e) => {
+    setForm({ ...form, files: e.target.files });
+  };
+
+  console.log("advisors en modal:", advisors);
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const dataToSend = new FormData();
-    Object.keys(form).forEach((key) => {
-      if (key === "archivos") {
-        Array.from(form.archivos).forEach((file) => dataToSend.append("files", file));
-      } else {
-        dataToSend.append(key, form[key]);
-      }
+
+    dataToSend.append("name", form.name);
+    dataToSend.append("description", form.description);
+    dataToSend.append("color", form.color);
+    dataToSend.append("priority", form.priority);
+    dataToSend.append("startDate", form.startDate);
+    dataToSend.append("limitDate", form.limitDate);
+
+    form.studentIDs.forEach((id) => {
+      dataToSend.append("studentIDs", id);
     });
+
+    if (form.files && form.files.length > 0) {
+      Array.from(form.files).forEach((file) => {
+        dataToSend.append("files", file);
+      });
+    }
+
     onSave(dataToSend);
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+
         <header className="modal-header">
-          <h3 className="user-title">{user?.name || "Ocampo Vargas Ricardo Naul"}</h3>
+          <h3>{authUser?.firstName} {authUser?.lastName}</h3>
         </header>
 
         <form onSubmit={handleSubmit} className="task-form">
-          {/* Nombre de la tarea */}
+
+          {/* Nombre */}
           <div className="form-group row-align">
             <label>Nombre:</label>
             <input
               type="text"
-              name="nameTask"
-              className="input-underline"
-              value={form.nameTask}
+              name="name"
+              value={form.name}
               onChange={handleChange}
+              required
             />
           </div>
 
-          {/* Asignación */}
+          {/* Asignar */}
           <div className="form-group row-align">
-            <div className="icon-label-dark">
-               <span className="material-icons"></span> Asignar
-            </div>
+            <label>Asignar</label>
             <select
-              name="assignedTo"
-              className="input-underline select-custom"
-              value={form.assignedTo}
-              onChange={handleChange}
+              multiple
+              value={form.studentIDs}
+              onChange={handleStudentChange}
+              style={{ height: "120px" }}
             >
-              <option value="">Seleccionar estudiante</option>
-              {advisors?.map((adv) => (
-                <option key={adv.id} value={adv.id}>{adv.name}</option>
-              ))}
+              {advisors.length === 0 ? (
+                <option disabled>No hay estudiantes</option>
+              ) : (
+                advisors.map((student) => (
+                  <option
+                    key={student.id || student.email}
+                    value={student.id}
+                  >
+                    {student.firstName || ""} {student.lastName || ""}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
-          {/* Etiqueta y Color */}
+          {/* Color */}
           <div className="form-group row-align">
-            <div className="icon-label-dark">
-               <span className="material-icons">Color</span>
+            <label>Color</label>
+            <input
+              type="color"
+              value={form.color || "#ffffff"}
+              onChange={(e) =>
+                setForm({ ...form, color: e.target.value })
+              }
+            />
+          </div>
+
+          {/* Status */}
+          <div className="form-group">
+            <label>Status</label>
+            <select
+              name="statusKanban"
+              value={form.statusKanban}
+              onChange={handleChange}
+            >
+              <option value="">Seleccionar</option>
+              <option value="TODO">Por hacer</option>
+              <option value="IN_PROGRESS">En progreso</option>
+              <option value="DONE">Hecho</option>
+            </select>
+          </div>
+
+          {/* Prioridad */}
+          <div className="form-group">
+            <label>Prioridad</label>
+            <select
+              name="priority"
+              value={form.priority}
+              onChange={handleChange}
+            >
+              <option value="">Seleccionar</option>
+              <option value="LOW">Baja</option>
+              <option value="MEDIUM">Media</option>
+              <option value="HIGH">Alta</option>
+            </select>
+          </div>
+
+          {/* Fechas */}
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Fecha inicio</label>
+              <input
+                type="date"
+                name="startDate"
+                value={form.startDate}
+                onChange={handleChange}
+              />
             </div>
-            <div className="tag-control-container">
-               <div className="tag-preview" style={{ backgroundColor: form.tagColor || '#eee' }}>
-                  {form.tagColor ? 'Color' : 'Lima'}
-               </div>
-               <input
-                type="color"
-                className="color-input-hidden"
-                value={form.tagColor || "#ffffff"}
-                onChange={(e) => setForm({ ...form, tagColor: e.target.value })}
+            <div className="form-group">
+              <label>Fecha límite</label>
+              <input
+                type="date"
+                name="limitDate"
+                value={form.limitDate}
+                onChange={handleChange}
               />
             </div>
           </div>
 
-          {/* Grid de Depósito y Prioridad */}
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Depósito</label>
-              <select name="deposito" value={form.deposito} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="POR_HACER">Por hacer</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Prioridad</label>
-              <select name="prioridad" value={form.prioridad} onChange={handleChange}>
-                <option value="">Seleccionar</option>
-                <option value="MEDIA">Media</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Grid de Fechas */}
-          <div className="form-grid">
-            <div className="form-group">
-              <label>Fecha de inicio</label>
-              <input type="date" name="fechaInicio" value={form.fechaInicio} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-              <label>Fecha de vencimiento</label>
-              <input type="date" name="fechaFin" value={form.fechaFin} onChange={handleChange} />
-            </div>
-          </div>
-
-          {/* Notas */}
+          {/* Descripción */}
           <div className="form-group">
-            <label>Notas</label>
-            <textarea name="notas" value={form.notas} onChange={handleChange} />
+            <label>Descripción</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+            />
           </div>
 
-          {/* Footer */}
+          {/* Archivos */}
           <div className="form-footer">
-            <div className="file-upload">
-              <label htmlFor="file-input" className="file-label">Datos adjuntos</label>
-              <input id="file-input" type="file" multiple onChange={handleFileChange} />
-              <div className="file-hint">Agrega datos adjuntos</div>
-            </div>
-            <button type="submit" className="btn-save">Guardar</button>
+            <input type="file" multiple onChange={handleFileChange} />
+            <button type="submit">Guardar</button>
           </div>
+
         </form>
       </div>
     </div>

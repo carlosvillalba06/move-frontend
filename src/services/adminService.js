@@ -26,7 +26,7 @@ export const getAllBoardsRequest = async () => {
 };
 
 
-// Obtener información del admin
+// Obtener informacion del admin
 export const getAdminInformationRequest = async () => {
   return await apiFetch("/admin/getAdminInformation", {
     method: "GET"
@@ -56,7 +56,7 @@ export const uploadLogoRequest = async (file) => {
   return response.json();
 };
 
-// Actualizar información del admin
+// Actualizar informacion del admin
 export const updateAdminInformationRequest = async (adminData) => {
   return await apiFetch(`${API_URL}/updateAdminInformation`, {
     method: "POST",
