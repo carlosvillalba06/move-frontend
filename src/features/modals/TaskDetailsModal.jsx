@@ -56,6 +56,8 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
 
+        <button className="close-x" onClick={onClose}>X</button>
+
         <header className="modal-header">
           <h3>Detalle de tarea</h3>
         </header>

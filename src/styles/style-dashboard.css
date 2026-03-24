@@ -163,13 +163,19 @@
 }
 
 .text-btn {
-  background: none;
-  border: none;
-  color: #007bff;
+ background-color: #ffffff;   
+  color: #000000;              
+  border: 1px solid #ccc;     
+  padding: 8px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 0;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
-
+.text-btn:hover {
+  background-color: #f5f5f5;   
+  border-color: #999;
+}
 /* Cards */
 .card {
   background: white;

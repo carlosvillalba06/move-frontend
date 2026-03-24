@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+const API_URL = "/admin";
 
 
 // Registrar asesor

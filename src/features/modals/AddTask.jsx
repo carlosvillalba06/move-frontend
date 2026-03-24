@@ -60,9 +60,9 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" >
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
+        <button className="close-x" onClick={onClose}>X</button>
         <header className="modal-header">
           <h3>{authUser?.firstName} {authUser?.lastName}</h3>
         </header>
@@ -73,6 +73,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group row-align">
             <label>Nombre:</label>
             <input
+              className="input-modal"
               type="text"
               name="name"
               value={form.name}
@@ -85,6 +86,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group row-align">
             <label>Asignar</label>
             <select
+            className="input-modal"
               multiple
               value={form.studentIDs}
               onChange={handleStudentChange}
@@ -109,6 +111,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group row-align">
             <label>Color</label>
             <input
+            className="input-modal"
               type="color"
               value={form.color || "#ffffff"}
               onChange={(e) =>
@@ -121,6 +124,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group">
             <label>Status</label>
             <select
+            className="input-modal"
               name="statusKanban"
               value={form.statusKanban}
               onChange={handleChange}
@@ -136,6 +140,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group">
             <label>Prioridad</label>
             <select
+            className="input-modal"
               name="priority"
               value={form.priority}
               onChange={handleChange}
@@ -152,6 +157,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
             <div className="form-group">
               <label>Fecha inicio</label>
               <input
+              className="input-modal"
                 type="date"
                 name="startDate"
                 value={form.startDate}
@@ -161,6 +167,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
             <div className="form-group">
               <label>Fecha límite</label>
               <input
+              className="input-modal"
                 type="date"
                 name="limitDate"
                 value={form.limitDate}
@@ -173,6 +180,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group">
             <label>Descripción</label>
             <textarea
+            className="input-modal"
               name="description"
               value={form.description}
               onChange={handleChange}
@@ -181,7 +189,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
 
           {/* Archivos */}
           <div className="form-footer">
-            <input type="file" multiple onChange={handleFileChange} />
+            <input type="file" multiple onChange={handleFileChange} className="input-modal"/>
             <button type="submit">Guardar</button>
           </div>
 

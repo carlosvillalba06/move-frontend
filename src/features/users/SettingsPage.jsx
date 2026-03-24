@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import userPlaceholder from "../../assets/userMOVE.png";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import DashboardSidebar from "../../components/DashboardSidebar";
+import SuccessAlert from "../modals/SuccessAlert";
 
 import { useAuth } from "../../services/authContext";
 
@@ -22,6 +23,8 @@ import {
 const Configuracion = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const role = user?.rol;
 
@@ -46,15 +49,15 @@ const Configuracion = () => {
   const service = useMemo(() => {
     return role === "ADMIN"
       ? {
-          getInfo: getAdminInformationRequest,
-          upload: uploadLogoRequest,
-          update: updateAdminInformationRequest
-        }
+        getInfo: getAdminInformationRequest,
+        upload: uploadLogoRequest,
+        update: updateAdminInformationRequest
+      }
       : {
-          getInfo: getAdviserInformationRequest,
-          upload: uploadLogoAdviserRequest,
-          update: updateAdviserInformationRequest
-        };
+        getInfo: getAdviserInformationRequest,
+        upload: uploadLogoAdviserRequest,
+        update: updateAdviserInformationRequest
+      };
   }, [role]);
 
   const handleLogout = () => {
@@ -88,7 +91,7 @@ const Configuracion = () => {
   }, [role, service]);
 
   const handleImageChange = async (e) => {
-    const file = e.target.files;
+    const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -99,6 +102,8 @@ const Configuracion = () => {
 
     try {
       await service.upload(file);
+      setAlertMessage("Imagen actualizada correctamente");
+      setAlertOpen(true);
     } catch (error) {
       console.error("Error subiendo imagen:", error);
     }
@@ -120,6 +125,8 @@ const Configuracion = () => {
         lastName: nameForm.lastName
       }));
       setEditingName(false);
+      setAlertMessage("Nombre actualizado correctamente");
+      setAlertOpen(true);
     } catch (error) {
       console.error("Error actualizando nombre", error);
     }
@@ -139,6 +146,9 @@ const Configuracion = () => {
         currentPassword: "",
         newPassword: ""
       });
+
+      setAlertMessage("Contraseña actualizada correctamente");
+      setAlertOpen(true);
     } catch (error) {
       console.error("Error cambiando contraseña", error);
     }
@@ -263,7 +273,15 @@ const Configuracion = () => {
           </button>
         </div>
       </div>
+
+      <SuccessAlert
+      isOpen={alertOpen}
+      mensage={alertMessage}
+      onClose={() => setAlertOpen(false)}/>
+
+      
     </DashboardLayout>
+
   );
 };
 

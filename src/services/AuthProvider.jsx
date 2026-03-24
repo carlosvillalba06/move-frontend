@@ -7,6 +7,7 @@ import { getAdminInformationRequest } from "./adminService";
 
 function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -41,6 +42,8 @@ function AuthProvider({ children }) {
       } catch (error) {
         setSession(parsed);
       }
+
+      setLoading(false)
     };
 
     loadSession();
@@ -97,7 +100,8 @@ function AuthProvider({ children }) {
         token: session?.token,
         login,
         logout,
-        isLoggedIn: !!session
+        isLoggedIn: !!session,
+        loading
       }}
     >{children}
     </AuthContext.Provider>

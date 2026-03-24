@@ -112,8 +112,11 @@ const StudentCardsToggleContainer = () => {
       />
 
       <SuccessAlert
-        isOpen={showSuccess}
-        onClose={() => setShowSuccess(false)}
+        isOpen={successConfig.isOpen}
+        message={successConfig.message}
+        onClose={() =>
+          setSuccessConfig({ isOpen: false, message: "" })
+        }
       />
 
       <ConfirmAlert

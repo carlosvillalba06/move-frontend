@@ -8,14 +8,21 @@ function Input({
 }) {
 
   return (
-    <input
-      type={type}
-      name={name}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      className={error ? "input input-error" : "input"}
-    />
+
+    <div>
+      <input
+        type={type}
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={error ? "input input-error" : "input"}
+
+      />
+
+      {error && <p className="error-message">{error}</p>}
+    </div>
+
   );
 
 }

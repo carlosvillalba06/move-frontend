@@ -3,7 +3,9 @@ import { useAuth } from "../services/authContext";
 
 function ProtectedRoutes({ allowedRoles }) {
 
-  const { session, isLoggedIn } = useAuth();
+  const { session, isLoggedIn, loading } = useAuth();
+
+    if (loading) return <div>Cargando...</div>;
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
@@ -15,7 +17,11 @@ function ProtectedRoutes({ allowedRoles }) {
     allowedRoles &&
     !allowedRoles.map(r => r.toLowerCase()).includes(userRole)
   ) {
-    return <Navigate to="/login" replace />;
+    if (userRole === "admin") {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else {
+      return <Navigate to="/advisor/dashboard" replace />;
+    }
   }
 
   return <Outlet />;

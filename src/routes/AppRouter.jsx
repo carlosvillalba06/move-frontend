@@ -11,17 +11,37 @@ import SettingsPage from "../features/users/SettingsPage";
 import Login from "../features/auth/Login";
 import ForgotPasswordEmail from "../features/auth/ForgotPasswordEmail";
 import TasksPage from "../features/tasks/TasksPage";
+import { useAuth } from "../services/authContext";
+import { Navigate } from "react-router-dom";
 
 const AppRouter = () => {
+
+    const { isLoggedIn, session } = useAuth();
+    const role = session?.user?.rol?.toLowerCase();
     return (
         <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
+            <Route
+                path="/login"
+                element={
+                    isLoggedIn
+                        ? <Navigate to={role === "admin" ? "/admin/dashboard" : "/advisor/dashboard"} replace />
+                        : <Login />
+                }
+            />
+
+            <Route
+                path="/"
+                element={
+                    isLoggedIn
+                        ? <Navigate to={role === "admin" ? "/admin/dashboard" : "/advisor/dashboard"} replace />
+                        : <Login />
+                }
+            />
             <Route path="/register" element={<RegisterEmail />} />
             <Route path="/verify-code" element={<VerifyCode />} />
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify-email" element={<ForgotPasswordEmail/>}/>
+            <Route path="/verify-email" element={<ForgotPasswordEmail />} />
             {/* ADMIN + ADVISOR */}
 
             <Route element={<ProtectedRoutes allowedRoles={["admin", "adviser"]} />}>

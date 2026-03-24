@@ -52,8 +52,8 @@ const Login = () => {
       newErrors.password = "La contraseña es obligatoria";
     }
 
-    setErrors(newErrors);
-
+    
+    setErrors({ ...newErrors});
     return Object.keys(newErrors).length === 0;
   };
 
@@ -75,6 +75,7 @@ const Login = () => {
 
       if (!success) {
         setServerError("Credenciales incorrectas");
+        setLoading(false);
         return;
       }
       const storedSession = JSON.parse(localStorage.getItem("session"));

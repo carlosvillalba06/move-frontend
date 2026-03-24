@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from "react";
 import AdvisorCard from "./cards/AdvisorCard.jsx";
 import { getAllBoardsRequest } from "../../services/adminService";
+import SearchBar from "../../components/SearchBar.jsx";
 
 const AdvisorCardsContainer = () => {
 
+  const [search, setSearch] = useState("");
   const [advisors, setAdvisors] = useState([]);
+
+  const filteredAdvisors = advisors.filter(a =>
+    `${a.firstName || ""} ${a.lastName || ""} ${a.email || ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
 
   useEffect(() => {
     const loadAdvisors = async () => {
@@ -20,10 +29,20 @@ const AdvisorCardsContainer = () => {
   }, []);
 
   return (
-    <div className="grid">
-      {advisors.map((advisor) => (
-        <AdvisorCard key={advisor.id} advisor={advisor} />
-      ))}
+    <div>
+
+      <SearchBar
+        setSearch={setSearch}
+
+      />
+
+      <br />
+      <div className="grid">
+        {filteredAdvisors.map((advisor) => (
+          <AdvisorCard key={advisor.id} advisor={advisor} />
+        ))}
+      </div>
+
     </div>
   );
 };
