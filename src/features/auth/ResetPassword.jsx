@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import InputPassword from "../../components/Input-password";
 import Button from "../../components/Button";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { setPasswordRequest } from "../../services/authService";
+import Input from "../../components/Input";
 
 const ResetPassword = () => {
 
@@ -93,12 +93,15 @@ const ResetPassword = () => {
 
               <label className="label">Nueva contraseña</label>
 
-              <InputPassword
+              <Input
+                type="password"
                 name="password"
                 placeholder="Contraseña"
                 value={password}
                 onChange={handlePasswordChange}
                 error={errors.password}
+                variant="login"
+                size="full"
               />
 
             </div>
@@ -107,12 +110,15 @@ const ResetPassword = () => {
 
               <label className="label">Confirmar contraseña</label>
 
-              <InputPassword
+              <Input
+              type="password"
                 name="confirmPassword"
                 placeholder="Confirmar contraseña"
                 value={confirmPassword}
                 onChange={handleConfirmChange}
                 error={errors.confirmPassword}
+                variant="login"
+                size="full"
               />
 
             </div>
@@ -123,11 +129,11 @@ const ResetPassword = () => {
               </p>
             )}
 
-            <Button
-              variant="primary"
-              text="Guardar"
-              type="submit"
-            />
+            <br />
+            <br />
+            <Button variant="primary" size="full" type="submit"> 
+              Guardar
+            </Button>
 
           </form>
 

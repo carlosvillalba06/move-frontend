@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Input from "../../components/Input";
-import InputPassword from "../../components/Input-password";
 import Button from "../../components/Button";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { useAuth } from "../../services/authContext";
@@ -52,8 +51,8 @@ const Login = () => {
       newErrors.password = "La contraseña es obligatoria";
     }
 
-    
-    setErrors({ ...newErrors});
+
+    setErrors({ ...newErrors });
     return Object.keys(newErrors).length === 0;
   };
 
@@ -118,6 +117,8 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 error={errors.email}
+                variant="login"
+                size="full"
               />
             </div>
 
@@ -125,12 +126,15 @@ const Login = () => {
 
               <label className="label">Contraseña</label>
 
-              <InputPassword
+              <Input
+                type="password"
                 name="password"
                 placeholder="Contraseña"
                 value={formData.password}
                 onChange={handleChange}
                 error={errors.password}
+                variant="login"
+                size="full"
               />
 
             </div>
@@ -147,12 +151,9 @@ const Login = () => {
               </p>
             )}
 
-            <Button
-              variant="primary"
-              text={loading ? "Iniciando sesión..." : "Iniciar sesión"}
-              type="submit"
-              disabled={loading}
-            />
+            <Button variant="primary" size="full" type="submit">
+              Iniciar sesión
+            </Button>
 
             <p>
               <Link to="/register">

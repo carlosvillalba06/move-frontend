@@ -13,6 +13,7 @@ const StudentCardsToggleContainer = () => {
   const [students, setStudents] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [successConfig, setSuccessConfig] = useState({
     isOpen: false,
     message: ""
@@ -37,6 +38,10 @@ const StudentCardsToggleContainer = () => {
     }
   };
 
+  useEffect(() => {
+    loadStudents();
+  }, []);
+
   const handleStudentCreated = async () => {
     await loadStudents();
     setSuccessConfig({
@@ -45,35 +50,43 @@ const StudentCardsToggleContainer = () => {
     });
   };
 
-  useEffect(() => {
-    loadStudents();
-  }, []);
+  const handleToggleStatus = (student) => {
+    const isActive = student.status;
 
-  const handleDisable = (email) => {
-    setConfirmMessage("¿Seguro que deseas deshabilitar este estudiante?");
-    setConfirmAction(() => async () => {
-      await disableUserRequest(email);
-      setStudents(prev =>
-        prev.map(s =>
-          s.email === email ? { ...s, status: false } : s
-        )
-      );
-      setConfirmOpen(false);
-    });
-    setConfirmOpen(true);
-  };
+    const actionText = isActive ? "deshabilitar" : "habilitar";
 
-  const handleEnable = (email) => {
-    setConfirmMessage("¿Seguro que deseas habilitar este estudiante?");
+    setConfirmMessage(`¿Seguro que deseas ${actionText} este estudiante?`);
+
     setConfirmAction(() => async () => {
-      await enableUserRequest(email);
-      setStudents(prev =>
-        prev.map(s =>
-          s.email === email ? { ...s, status: true } : s
-        )
-      );
-      setConfirmOpen(false);
+      try {
+        if (isActive) {
+          await disableUserRequest(student.email);
+        } else {
+          await enableUserRequest(student.email);
+        }
+
+        setStudents(prev =>
+          prev.map(s =>
+            s.email === student.email
+              ? { ...s, status: !isActive }
+              : s
+          )
+        );
+
+        setSuccessConfig({
+          isOpen: true,
+          message: isActive
+            ? "Estudiante deshabilitado"
+            : "Estudiante habilitado"
+        });
+
+      } catch (error) {
+        console.error("Error al cambiar estado", error);
+      } finally {
+        setConfirmOpen(false);
+      }
     });
+
     setConfirmOpen(true);
   };
 
@@ -87,6 +100,7 @@ const StudentCardsToggleContainer = () => {
 
   return (
     <div>
+
       <SearchBarAddStudent
         setSearch={setSearch}
         onAddStudent={handleAddStudent}
@@ -99,8 +113,7 @@ const StudentCardsToggleContainer = () => {
           <StudentToggleCard
             key={student.email}
             student={student}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
+            onToggle={handleToggleStatus}
           />
         ))}
       </div>
@@ -125,6 +138,7 @@ const StudentCardsToggleContainer = () => {
         onConfirm={confirmAction}
         onCancel={() => setConfirmOpen(false)}
       />
+
     </div>
   );
 };

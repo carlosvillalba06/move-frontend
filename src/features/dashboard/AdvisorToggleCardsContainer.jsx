@@ -14,8 +14,8 @@ const AdvisorCardsToggleContainer = () => {
   const [advisors, setAdvisors] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const [ successConfig, setSuccessConfig] = useState({
+
+  const [successConfig, setSuccessConfig] = useState({
     isOpen: false,
     message: ""
   });
@@ -39,6 +39,10 @@ const AdvisorCardsToggleContainer = () => {
     }
   };
 
+  useEffect(() => {
+    loadAdvisors();
+  }, []);
+
   const handleAdvisorCreated = async () => {
     await loadAdvisors();
     setSuccessConfig({
@@ -47,45 +51,41 @@ const AdvisorCardsToggleContainer = () => {
     });
   };
 
-  useEffect(() => {
-    loadAdvisors();
-  }, []);
+  const handleToggleStatus = (advisor) => {
+    const isActive = advisor.status;
 
-  const handleDisable = (email) => {
+    const actionText = isActive ? "deshabilitar" : "habilitar";
 
-    setConfirmMessage("¿Seguro que deseas deshabilitar este asesor?");
-
-    setConfirmAction(() => async () => {
-
-      await disableUserRequest(email);
-
-      setAdvisors(prev =>
-        prev.map(a =>
-          a.email === email ? { ...a, status: false } : a
-        )
-      );
-
-      setConfirmOpen(false);
-    });
-
-    setConfirmOpen(true);
-  };
-
-  const handleEnable = (email) => {
-
-    setConfirmMessage("¿Seguro que deseas habilitar este asesor?");
+    setConfirmMessage(`¿Seguro que deseas ${actionText} este asesor?`);
 
     setConfirmAction(() => async () => {
+      try {
+        if (isActive) {
+          await disableUserRequest(advisor.email);
+        } else {
+          await enableUserRequest(advisor.email);
+        }
 
-      await enableUserRequest(email);
+        setAdvisors(prev =>
+          prev.map(a =>
+            a.email === advisor.email
+              ? { ...a, status: !isActive }
+              : a
+          )
+        );
 
-      setAdvisors(prev =>
-        prev.map(a =>
-          a.email === email ? { ...a, status: true } : a
-        )
-      );
+        setSuccessConfig({
+          isOpen: true,
+          message: isActive
+            ? "Asesor deshabilitado"
+            : "Asesor habilitado"
+        });
 
-      setConfirmOpen(false);
+      } catch (error) {
+        console.error("Error al cambiar estado", error);
+      } finally {
+        setConfirmOpen(false);
+      }
     });
 
     setConfirmOpen(true);
@@ -114,8 +114,7 @@ const AdvisorCardsToggleContainer = () => {
           <AdvisorToggleCard
             key={advisor.email}
             advisor={advisor}
-            onEnable={handleEnable}
-            onDisable={handleDisable}
+            onToggle={handleToggleStatus}
           />
         ))}
       </div>
@@ -128,8 +127,10 @@ const AdvisorCardsToggleContainer = () => {
 
       <SuccessAlert
         isOpen={successConfig.isOpen}
-        mensage={successConfig.message}
-        onClose={() => setSuccessConfig(prev => ({ ...prev, isOpen:false}))}
+        message={successConfig.message}
+        onClose={() =>
+          setSuccessConfig({ isOpen: false, message: "" })
+        }
       />
 
       <ConfirmAlert

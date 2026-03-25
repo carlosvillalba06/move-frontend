@@ -72,12 +72,12 @@ const VerifyCode = () => {
               <p className="error-message">{error}</p>
             )}
 
-            <Button
-              variant="primary"
-              text={loading ? "Verificando..." : "Verificar"}
-              type="submit"
-              disabled={loading}
-            />
+            <br />
+            <br />
+
+            <Button variant="primary" size="full" type="submit">
+              Verificar
+            </Button>
 
           </form>
 

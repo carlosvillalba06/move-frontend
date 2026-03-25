@@ -71,6 +71,7 @@
   display: block;
 }
 
+
 /* Sidebar */
 .dashboard-sidebar {
   width: 260px;
@@ -84,7 +85,7 @@
 .dashboard-sidebar button {
   width: 100%;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #b0b0b0;
   background-color: #e0e0e0;
   font-size: 0.95rem;
@@ -140,48 +141,18 @@
   object-fit: cover;
 }
 
-.input-field {
-  display: flex;
-  flex-direction: column;
-  margin-top: 15px;
-}
-
-.input-field input {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-.password-wrapper {
-  display: flex;
-  align-items: center;
-}
 
 .eye {
   margin-left: 10px;
   cursor: pointer;
 }
 
-.text-btn {
- background-color: #ffffff;   
-  color: #000000;              
-  border: 1px solid #ccc;     
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-.text-btn:hover {
-  background-color: #f5f5f5;   
-  border-color: #999;
-}
 /* Cards */
 .card {
   background: white;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 12px 18px;
-  display: flex;
+  
   flex-direction: column;
   justify-content: space-between;
   min-height: 120px;
@@ -203,7 +174,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  border-radius: 5px;
+  border-radius: 10px;
   gap: 20px;
   padding: 40px;
   background-color: #ccc;
@@ -223,7 +194,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 15px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
@@ -245,54 +216,6 @@
   font-size: 14px;
   margin: 0;
   color: #888;
-}
-
-/* Boton */
-button {
-  align-self: flex-end;
-  background: black;
-  color: white;
-  border: none;
-  padding: 8px 25px;
-  border-radius: 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: -10px;
-}
-
-button {
-  border: none;
-  padding: 6px 15px;
-  border-radius: 6px;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-  min-width: 110px;
-}
-
-.btn-disable {
-  background-color: #600;
-}
-
-.btn-enable {
-  background-color: #042;
-}
-
-.add-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 9px 16px;
-  background: #EAEAEA;
-  color: #616161;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  white-space: nowrap;
 }
 
 .logout-wrapper {

@@ -46,7 +46,7 @@ const RegisterEmail = () => {
       setLoading(true);
 
       await registerRequest(email);
-      localStorage.setItem("email",email);
+      localStorage.setItem("email", email);
       localStorage.setItem("processType", "register");
       navigate("/verify-code");
 
@@ -81,18 +81,19 @@ const RegisterEmail = () => {
               value={email}
               onChange={handleChange}
               error={error}
+              variant="login"
+              size="full"
             />
 
             {error && (
               <p className="error-message">{error}</p>
             )}
 
-            <Button
-              variant="primary"
-              text={loading ? "Enviando..." : "Continuar"}
-              type="submit"
-              disabled={loading}
-            />
+            <br />
+            <br />
+            <Button variant="primary" size="full" type="submit">
+              Continuar
+            </Button>
 
           </form>
 

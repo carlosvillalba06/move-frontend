@@ -1,24 +1,17 @@
+import React from "react";
+
 function Button({
   variant = "primary",
-  text = "Wihooo",
-  onClick,
-  type = "button",
-  disabled = false
+  size = "md",
+  children,
+  ...props
 }) {
-
-  const className =
-    variant === "primary"
-      ? "button-primary"
-      : "button-secondary";
-
   return (
     <button
-      type={type}
-      className={className}
-      onClick={onClick}
-      disabled={disabled}
+      className={`btn btn-${variant} btn-${size}`}
+      {...props}
     >
-      {text}
+      {children}
     </button>
   );
 }

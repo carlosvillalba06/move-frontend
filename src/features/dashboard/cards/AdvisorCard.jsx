@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import Button from "../../../components/Button";
 
 const AdvisorCard = ({ advisor }) => {
 
@@ -32,10 +33,9 @@ const AdvisorCard = ({ advisor }) => {
           <h2>{advisor.firstName} {advisor.lastName}</h2>
         </div>
       </div>
-
-      <button onClick={goToBoard}>
-        Ingresar
-      </button>
+      <Button variant="primary" size="sm"  onClick={goToBoard}>
+          Ingresar
+      </Button>
     </div>
   );
 };

@@ -5,7 +5,8 @@ import userPlaceholder from "../../assets/userMOVE.png";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import DashboardSidebar from "../../components/DashboardSidebar";
 import SuccessAlert from "../modals/SuccessAlert";
-
+import Button from "../../components/Button";
+import Input from "../../components/Input";
 import { useAuth } from "../../services/authContext";
 
 import {
@@ -169,13 +170,13 @@ const Configuracion = () => {
               hidden
               accept="image/*"
               onChange={handleImageChange}
+              variant="modal"
             />
-            <button
-              className="text-btn"
-              onClick={() => fileInputRef.current.click()}
-            >
+
+
+            <Button variant="secondary" size="md" onClick={() => fileInputRef.current.click()}>
               Cambiar imagen
-            </button>
+            </Button>
           </div>
         </section>
 
@@ -185,36 +186,41 @@ const Configuracion = () => {
           <div className="section-header">
             <h2>Nombre</h2>
             {!editingName ? (
-              <button className="text-btn" onClick={() => setEditingName(true)}>
+
+              <Button variant="secondary" size="md" onClick={() => setEditingName(true)}>
                 Editar
-              </button>
+              </Button>
             ) : (
-              <button className="text-btn" onClick={handleSaveName}>
-                Guardar cambios
-              </button>
+              <Button variant="secondary" size="md" onClick={handleSaveName}>
+                Guardar Cambios
+              </Button>
             )}
           </div>
 
           <div className="input-field">
             <label>Nombre(s)</label>
-            <input
+            <Input
               type="text"
               name="firstName"
               value={nameForm.firstName}
               onChange={handleNameChange}
               disabled={!editingName}
-            />
+              variant="modal"
+              size="md" />
+
+
           </div>
 
           <div className="input-field">
             <label>Apellidos</label>
-            <input
-              type="text"
+            <Input
               name="lastName"
               value={nameForm.lastName}
               onChange={handleNameChange}
               disabled={!editingName}
-            />
+              variant="modal"
+              size="md" />
+
           </div>
         </section>
 
@@ -224,62 +230,67 @@ const Configuracion = () => {
           <div className="section-header">
             <h2>Seguridad</h2>
             {!editingPassword ? (
-              <button
-                className="text-btn"
-                onClick={() => setEditingPassword(true)}
-              >
+              <Button variant="secondary" size="md" onClick={() => setEditingPassword(true)}>
                 Cambiar contraseña
-              </button>
+              </Button>
             ) : (
-              <button className="text-btn" onClick={handleSavePassword}>
-                Guardar contraseña
-              </button>
+              <Button variant="secondary" size="md" onClick={handleSavePassword}>
+                Guardar Contraseña
+              </Button>
+
             )}
           </div>
 
           <div className="input-field">
             <label>Correo</label>
-            <input type="email" value={user?.email || ""} readOnly />
+            <Input type="email" value={user?.email || ""} readOnly variant="modal" size="md" />
           </div>
 
           {editingPassword && (
             <>
               <div className="input-field">
                 <label>Contraseña actual</label>
-                <input
+                <Input
                   type="password"
                   name="currentPassword"
                   value={passwordForm.currentPassword}
                   onChange={handlePasswordChange}
+                  variant="modal"
+                  size="md"
                 />
+
               </div>
 
               <div className="input-field">
                 <label>Nueva contraseña</label>
-                <input
+                <Input
                   type="password"
                   name="newPassword"
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
+                  variant="modal"
+                  size="md"
                 />
+
               </div>
             </>
           )}
         </section>
 
         <div className="logout-wrapper">
-          <button className="logout-btn" onClick={handleLogout}>
+          <Button variant="primary" size="lg" onClick={handleLogout}>
             Cerrar sesión
-          </button>
+          </Button>
+
         </div>
       </div>
 
       <SuccessAlert
-      isOpen={alertOpen}
-      mensage={alertMessage}
-      onClose={() => setAlertOpen(false)}/>
+        isOpen={alertOpen}
+        mensage={alertMessage}
+        onClose={() => setAlertOpen(false)} />
 
-      
+
     </DashboardLayout>
 
   );

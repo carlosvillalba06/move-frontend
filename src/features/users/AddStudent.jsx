@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { registerStudentRequest } from "../../services/adviserService";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
 
 const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
   const [form, setForm] = useState({
@@ -8,6 +10,8 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
     email: ""
   });
 
+  const [errors, setErrors] = useState({});
+
   if (!isOpen) return null;
 
   const handleChange = (e) => {
@@ -15,19 +19,52 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
       ...form,
       [e.target.name]: e.target.value
     });
+
+    setErrors({
+      ...errors,
+      [e.target.name]: ""
+    });
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!form.firstName.trim()) {
+      newErrors.firstName = "El nombre es obligatorio";
+    }
+
+    if (!form.lastName.trim()) {
+      newErrors.lastName = "Los apellidos son obligatorios";
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "El correo es obligatorio";
+    } 
+
+    return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const validationErrors = validate();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     try {
       await registerStudentRequest(form);
       await onStudentCreated();
+
       setForm({
         firstName: "",
         lastName: "",
         email: ""
       });
+
+      setErrors({});
       onClose();
     } catch (error) {
       console.error("Error al registrar estudiante:", error);
@@ -37,52 +74,61 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        
         <button className="close-x" onClick={onClose}>X</button>
 
         <h2>Registrar estudiante</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="grid-form">
+
             <div>
               <label>Nombre(s):</label>
-              <input
-                type="text"
+              <Input
                 name="firstName"
                 placeholder="Ej. Carlos Giovanni"
                 value={form.firstName}
                 onChange={handleChange}
-                required
+                error={errors.firstName}
+                variant="modal"
+                size="md"
               />
             </div>
 
             <div>
               <label>Apellidos:</label>
-              <input
-                type="text"
+              <Input
                 name="lastName"
                 placeholder="Ej. Villalba González"
                 value={form.lastName}
                 onChange={handleChange}
-                required
+                error={errors.lastName}
+                variant="modal"
+                size="md"
               />
             </div>
 
             <div style={{ gridColumn: "span 2" }}>
               <label>Correo institucional:</label>
-              <input
-                type="email"
+              <Input
                 name="email"
                 placeholder="usuario@utez.edu.mx"
                 value={form.email}
                 onChange={handleChange}
-                required
+                error={errors.email}
+                variant="modal"
+                size="md"
               />
             </div>
+
           </div>
 
           <footer>
-            <button type="submit">Registrar</button>
+            <Button variant="primary" size="sm" type="submit">
+              Registrar
+            </Button>
           </footer>
+
         </form>
       </div>
     </div>

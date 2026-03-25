@@ -1,30 +1,33 @@
+import React from "react";
+
 function Input({
   type = "text",
   name,
   placeholder,
   value,
   onChange,
-  error
+  error,
+  variant = "default",
+  size = "md",
+  ...props
 }) {
-
   return (
-
-    <div>
+    <div className="input-container">
       <input
         type={type}
         name={name}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={error ? "input input-error" : "input"}
-
+        className={`input input-${variant} input-${size} ${
+          error ? "input-error" : ""
+        }`}
+        {...props}
       />
 
       {error && <p className="error-message">{error}</p>}
     </div>
-
   );
-
 }
 
 export default Input;

@@ -48,40 +48,72 @@ h1 {
 }
 
 .input {
-  width: 100%;
-  padding: 15px 20px;
-  border-radius: 25px;
-  border: none;
-  background-color: #ededed;
-  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
   outline: none;
-  transition: background-color 0.2s;
+  transition: 0.2s;
 }
 
-.input:focus {
-  background-color: #e2e2e2;
+/* Variantes */
+
+.input-default {
+  background: #fff;
 }
+
+.input-login {
+  background: #ededed; 
+}
+
+.input-modal {
+  background: #fff;
+}
+
+/* Tamaños */
+
+.input-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.input-md {
+  padding: 8px 14px;
+  font-size: 14px;
+  min-width: 120px;
+}
+select,textarea {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+  transition: 0.2s;
+  background: #fff;
+  padding: 8px 14px;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.input-lg {
+  padding: 14px 16px;
+  font-size: 16px;
+  min-width: 180px;
+}
+
+.input-full {
+  width: 100%;
+  padding: 14px;
+}
+
+/* Error */
 
 .input-error {
-  width: 100%;
-  padding: 15px 20px;
-  border-radius: 25px;
   border: 1px solid red;
-  background-color: #fff5f5;
-  font-size: 1rem;
-  outline: none;
-}
-
-.input::placeholder {
-  color: #a0a0a0;
 }
 
 .error-message {
   color: red;
-  font-size: 14px;
-  margin-top: 5px;
-  margin-left: 10px;
+  font-size: 12px;
+  margin-top: 4px;
 }
+
 
 .login-form p {
   margin: 10px 0;
@@ -98,23 +130,65 @@ h1 {
   color: #000;
 }
 
-/* Boton */
-.button-primary {
-  width: 100%;
-  padding: 15px;
-  border-radius: 25px;
-  border: none;
-  background-color: #000000;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
+/* ---- Boton componente*/
+
+.btn {
+  border: 1px solid black;
+  border-radius: 10px;
   cursor: pointer;
-  margin-top: 10px;
-  transition: background-color 0.3s;
+  font-weight: 500;
 }
 
-.button-primary:hover {
-  background-color: #333;
+/* ----- colores */
+
+.btn-primary {
+  background: black;
+  color: white;
+}
+
+.btn-secondary {
+  background: white;
+  color: black;
+}
+
+.btn-success {
+  background: rgb(7, 128, 7);
+  color: white;
+}
+
+.btn-danger {
+  background: red;
+  color: white;
+}
+
+/* ----- Tamaños*/
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: 120px;
+}
+
+.btn-md {
+  padding: 10px 16px;
+  min-width: 160px;
+}
+
+.btn-lg {
+  padding: 12px 40px;
+  min-width: 200px;
+}
+
+.btn-full {
+  width: 100%;
+  padding: 14px;
+}
+
+/* Disabled */
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Codigo */
@@ -133,7 +207,7 @@ h1 {
   font-weight: 600;
   border: none;
   background-color: #ededed;
-  border-radius: 12px;
+  border-radius: 10px;
   color: #000;
   transition: all 0.2s ease;
 }
@@ -184,7 +258,7 @@ h1 {
   gap: 10px;
   background-color: #e6e6e6;
   padding: 8px 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   width: 100%;
   max-width: 800px;
 }
@@ -207,6 +281,15 @@ h1 {
 .search-input svg {
   color: #777;
 }
+.add-button{
+  display: flex;
+  align-items: center;
+  background-color: #e6e6e6;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+
+}
 
 .filter-button {
   display: flex;
@@ -214,6 +297,8 @@ h1 {
   gap: 8px;
   cursor: pointer;
   user-select: none;
+  padding: 6px 16px;
+  border-radius: 10px;
 }
 
 .filter-button span {

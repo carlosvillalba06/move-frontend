@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "../../components/Button";
 
 const ConfirmAlert = ({ isOpen, message, onConfirm, onCancel }) => {
 
@@ -11,13 +12,13 @@ const ConfirmAlert = ({ isOpen, message, onConfirm, onCancel }) => {
         <h2>{message}</h2>
 
         <div className="alert-buttons">
-          <button className="cancel-btn" onClick={onCancel}>
+          <Button variant="secondary" size="md" onClick={onCancel}>
             Cancelar
-          </button>
+          </Button>
 
-          <button className="confirm-btn" onClick={onConfirm}>
+          <Button variant="primary" size="md" onClick={onConfirm}>
             Confirmar
-          </button>
+          </Button>
         </div>
 
       </div>

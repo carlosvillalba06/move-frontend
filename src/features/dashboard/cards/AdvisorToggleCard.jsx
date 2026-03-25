@@ -1,19 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
+import Button from "../../../components/Button";
 
-const AdvisorToggleCard = ({ advisor, onEnable, onDisable }) => {
-
-  const [enabled, setEnabled] = useState(advisor.status === true);
-
-  const handleToggle = async () => {
-
-    if (enabled) {
-      await onDisable(advisor.email);
-    } else {
-      await onEnable(advisor.email);
-    }
-
-    setEnabled(!enabled);
-  };
+const AdvisorToggleCard = ({ advisor, onToggle }) => {
 
   return (
     <div className="toggle-card">
@@ -29,18 +17,13 @@ const AdvisorToggleCard = ({ advisor, onEnable, onDisable }) => {
         </div>
       </div>
 
-
-
-      {advisor.status ? (
-        <button className="btn-disable" onClick={() => onDisable(advisor.email)}>
-          Deshabilitar
-        </button>
-      ) : (
-        <button className="btn-enable" onClick={() => onEnable(advisor.email)}>
-          Habilitar
-        </button>
-      )}
-
+      <Button
+        variant={advisor.status ? "danger" : "success"}
+        size="sm"
+        onClick={() => onToggle(advisor)}
+      >
+        {advisor.status ? "Deshabilitar" : "Habilitar"}
+      </Button>
 
     </div>
   );

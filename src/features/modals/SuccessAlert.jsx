@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "../../components/Button";
 
 const SuccessAlert = ({ isOpen, mensage, onClose }) => {
   if (!isOpen) return null;
@@ -6,15 +7,13 @@ const SuccessAlert = ({ isOpen, mensage, onClose }) => {
   return (
     <div className="modal-overlay">
       <div className="alert-content">
-
-
-
         <h2>{mensage}</h2>
 
         <p>Presione para continuar</p>
-        <button className="continue-button" onClick={onClose}>
-          Continuar
-        </button>
+
+        <Button variant="primary" size="sm" onClick={onClose}>
+              Continuar
+            </Button>
 
       </div>
     </div>

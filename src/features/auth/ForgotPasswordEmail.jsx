@@ -83,18 +83,19 @@ const ForgotPasswordEmail = () => {
               value={email}
               onChange={handleChange}
               error={error}
+              variant="login"
+              size="full"
             />
 
             {error && (
               <p className="error-message">{error}</p>
             )}
 
-            <Button
-              variant="primary"
-              text={loading ? "Enviando..." : "Continuar"}
-              type="submit"
-              disabled={loading}
-            />
+            <br />
+            <br />
+            <Button variant="primary" size="full" type="submit">
+              Continuar
+            </Button>
 
           </form>
 
