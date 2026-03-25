@@ -42,11 +42,12 @@ const StudentCardsToggleContainer = () => {
     loadStudents();
   }, []);
 
-  const handleStudentCreated = async () => {
+  const handleStudentCreated = async (student) => {
+    console.log("STUDENT:", student);
     await loadStudents();
     setSuccessConfig({
       isOpen: true,
-      message: "Estudiante registrado con éxito"
+      message: `Estudiante ${student.firstName} registrado con éxito`
     });
   };
 

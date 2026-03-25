@@ -59,7 +59,11 @@ const AddAdvisor = ({ isOpen, onClose, onAdvisorCreated }) => {
 
     try {
       await registerAdvisorRequest(form);
-      await onAdvisorCreated();
+      await onAdvisorCreated({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim()
+      });
 
       setForm({
         firstName: "",

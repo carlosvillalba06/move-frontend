@@ -43,11 +43,11 @@ const AdvisorCardsToggleContainer = () => {
     loadAdvisors();
   }, []);
 
-  const handleAdvisorCreated = async () => {
+  const handleAdvisorCreated = async (advisor) => {
     await loadAdvisors();
     setSuccessConfig({
       isOpen: true,
-      message: "Asesor registrado con éxito"
+      message: `Asesor ${advisor.firstName} registrado con éxito`
     });
   };
 

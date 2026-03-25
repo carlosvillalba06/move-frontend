@@ -15,14 +15,16 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
   if (!isOpen) return null;
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: value
     });
 
     setErrors({
       ...errors,
-      [e.target.name]: ""
+      [name]: ""
     });
   };
 
@@ -39,7 +41,9 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
 
     if (!form.email.trim()) {
       newErrors.email = "El correo es obligatorio";
-    } 
+    } else if (!form.email.includes("@")) {
+      newErrors.email = "El correo debe contener @";
+    }
 
     return newErrors;
   };
@@ -55,8 +59,17 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
     }
 
     try {
-      await registerStudentRequest(form);
-      await onStudentCreated();
+      await registerStudentRequest({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim()
+      });
+
+      await onStudentCreated({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim()
+      });
 
       setForm({
         firstName: "",
@@ -68,13 +81,17 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
       onClose();
     } catch (error) {
       console.error("Error al registrar estudiante:", error);
+
+      setErrors({
+        email: error.message || "Error al registrar el correo"
+      });
     }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        
+
         <button className="close-x" onClick={onClose}>X</button>
 
         <h2>Registrar estudiante</h2>
@@ -109,10 +126,10 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
             </div>
 
             <div style={{ gridColumn: "span 2" }}>
-              <label>Correo institucional:</label>
+              <label>Correo:</label>
               <Input
                 name="email"
-                placeholder="usuario@utez.edu.mx"
+                placeholder="ejemplo@gmail.com"
                 value={form.email}
                 onChange={handleChange}
                 error={errors.email}

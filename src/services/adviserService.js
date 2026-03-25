@@ -2,7 +2,7 @@ const API_URL = "/adviser";
 
 import { apiFetch } from "./api";
 
-// Registrar estudiante
+// Registrar estudiante (CORREGIDO)
 export const registerStudentRequest = async (student) => {
   return await apiFetch(`${API_URL}/registerStudent`, {
     method: "POST",
@@ -25,34 +25,32 @@ export const getAllStudentsRequest = async () => {
   });
 };
 
-// Deshabilitar estudiante del board
+//  Deshabilitar estudiante
 export const disableBoardStudentRequest = async (id) => {
   return await apiFetch(`${API_URL}/disableBoardStudent?id=${id}`, {
     method: "POST"
   });
 };
 
-// Habilitar estudiante del board
+//  Habilitar estudiante
 export const enableBoardStudentRequest = async (id) => {
   return await apiFetch(`${API_URL}/enableBoardStudent?id=${id}`, {
     method: "POST"
   });
 };
 
-
-// Subir logo (multipart/form-data)
+// Subir logo
 export const uploadLogoAdviserRequest = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
   return await apiFetch(`${API_URL}/uploadLogo`, {
     method: "POST",
-    body: formData,
-    headers: {}
+    body: formData
   });
 };
 
-// Actualizar información del adviser
+//  OJO: tu backend tiene typo → "Adivser"
 export const updateAdviserInformationRequest = async (adviserData) => {
   return await apiFetch(`${API_URL}/updateAdivserInformation`, {
     method: "POST",
@@ -60,15 +58,16 @@ export const updateAdviserInformationRequest = async (adviserData) => {
   });
 };
 
-// Obtener información del adviser
+//  Obtener info adviser
 export const getAdviserInformationRequest = async () => {
   return await apiFetch(`${API_URL}/getAdviserInformation`, {
     method: "GET"
   });
 };
 
+//  Crear tarea (ya estaba bien)
 export const addTaskRequest = async (formData) => {
-  return await apiFetch(`/adviser/addTask`, {
+  return await apiFetch(`${API_URL}/addTask`, {
     method: "POST",
     body: formData
   });
