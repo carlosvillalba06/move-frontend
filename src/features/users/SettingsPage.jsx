@@ -16,7 +16,7 @@ import {
 } from "../../services/adminService";
 
 import {
-  getAdviserInformationRequest,
+ getAdviserInformationRequest,
   uploadLogoAdviserRequest,
   updateAdviserInformationRequest
 } from "../../services/adviserService";

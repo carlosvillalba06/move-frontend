@@ -8,10 +8,12 @@ const TasksPage = () => {
 
   const { boardId } = useParams();
   const { user } = useAuth();
+  console.log("DEBUG TasksPage: user =", user);
 
   const finalBoardId = boardId || user?.boardId;
 
-  return <KanbanBoard boardId={finalBoardId} />;
+  console.log("DEBUG TasksPage: finalBoardId =", finalBoardId);
+  return <KanbanBoard boardId={finalBoardId}  />;
 };
 
 export default TasksPage;

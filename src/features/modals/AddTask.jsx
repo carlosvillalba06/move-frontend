@@ -8,7 +8,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
   const [form, setForm] = useState({
     name: "",
     studentIDs: [],
-    color: "",
+    color: "#ffffff",
     statusKanban: "",
     priority: "",
     startDate: "",
@@ -18,36 +18,29 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
   });
 
   const [errors, setErrors] = useState({});
-
   const { user: authUser } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setForm({ ...form, [name]: value });
-
-    setErrors({
-      ...errors,
-      [name]: ""
-    });
+    setErrors({ ...errors, [name]: "" });
   };
 
   const handleStudentChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions);
-    const values = selectedOptions.map(option => Number(option.value));
+    const values = Array.from(e.target.selectedOptions)
+      .map(option => Number(option.value));
+
+    console.log("Seleccionados:", values);
 
     setForm({ ...form, studentIDs: values });
+    setErrors({ ...errors, studentIDs: "" });
 
-    setErrors({
-      ...errors,
-      studentIDs: ""
-    });
   };
 
   const handleFileChange = (e) => {
-    setForm({ ...form, files: e.target.files });
+    setForm({ ...form, files: Array.from(e.target.files) });
   };
-
 
   const validate = () => {
     const newErrors = {};
@@ -93,8 +86,8 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
 
     dataToSend.append("name", form.name);
     dataToSend.append("description", form.description);
-    dataToSend.append("color", form.color);
-    dataToSend.append("priority", form.priority);
+    dataToSend.append("color", form.color || "");
+    dataToSend.append("priority", form.priority || "");
     dataToSend.append("startDate", form.startDate);
     dataToSend.append("limitDate", form.limitDate);
 
@@ -102,11 +95,9 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
       dataToSend.append("studentIDs", id);
     });
 
-    if (form.files && form.files.length > 0) {
-      Array.from(form.files).forEach((file) => {
-        dataToSend.append("files", file);
-      });
-    }
+    form.files.forEach((file) => {
+      dataToSend.append("files", file);
+    });
 
     onSave(dataToSend);
   };
@@ -132,43 +123,38 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
               onChange={handleChange}
               error={errors.name}
               variant="modal"
-              size="md"
             />
           </div>
 
-          {/* Asignar */}
+          {/* Asignar alumnos */}
           <div className="form-group row-align">
             <label>Asignar</label>
             <select
               multiple
-              value={form.studentIDs}
               onChange={handleStudentChange}
-              style={{ height: "60px", width: "380px" }}
+              style={{ height: "80px", width: "380px" }}
             >
               {advisors.length === 0 ? (
                 <option disabled>No hay estudiantes</option>
               ) : (
                 advisors.map((student) => (
-                  <option key={student.id} value={student.id}>
+                  <option key={student.studentID} value={student.studentID}>
                     {student.firstName} {student.lastName}
                   </option>
                 ))
               )}
             </select>
-            {errors.studentIDs && <p className="error-message">{errors.studentIDs}</p>}
+            {errors.studentIDs && (
+              <p className="error-message">{errors.studentIDs}</p>
+            )}
           </div>
 
           {/* Color */}
           <div className="form-group row-align">
             <label>Color</label>
-            <input style={{
-              borderRadius: '10px',
-              border: '10px',
-              cursor: 'pointer'
-            }}
-              className="input-modal"
+            <input
               type="color"
-              value={form.color || "#ffffff"}
+              value={form.color}
               onChange={(e) =>
                 setForm({ ...form, color: e.target.value })
               }
@@ -188,7 +174,9 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
               <option value="IN_PROGRESS">En progreso</option>
               <option value="DONE">Hecho</option>
             </select>
-            {errors.statusKanban && <p className="error-message">{errors.statusKanban}</p>}
+            {errors.statusKanban && (
+              <p className="error-message">{errors.statusKanban}</p>
+            )}
           </div>
 
           {/* Prioridad */}
@@ -204,7 +192,9 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
               <option value="MEDIUM">Media</option>
               <option value="HIGH">Alta</option>
             </select>
-            {errors.priority && <p className="error-message">{errors.priority}</p>}
+            {errors.priority && (
+              <p className="error-message">{errors.priority}</p>
+            )}
           </div>
 
           {/* Fechas */}
@@ -217,7 +207,6 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
                 value={form.startDate}
                 onChange={handleChange}
                 error={errors.startDate}
-                variant="modal"
               />
             </div>
 
@@ -229,7 +218,6 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
                 value={form.limitDate}
                 onChange={handleChange}
                 error={errors.limitDate}
-                variant="modal"
               />
             </div>
           </div>
@@ -250,10 +238,9 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
               type="file"
               multiple
               onChange={handleFileChange}
-              className="input input-modal"
             />
 
-            <Button variant="primary" size="md" type="submit">
+            <Button type="submit">
               Guardar
             </Button>
           </div>

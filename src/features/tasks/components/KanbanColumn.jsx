@@ -3,7 +3,7 @@ import TaskCard from "./TaskCard";
 import AddTask from "../../modals/AddTask";
 import TaskDetailsModal from "../../modals/TaskDetailsModal";
 
-const KanbanColumn = ({ title, status, tasks, advisors = [], onCreateTask, onMoveTask }) => {
+const KanbanColumn = ({ title, status, tasks, advisors = [], onCreateTask, onMoveTask, onUpdateTask, onDeleteTask }) => {
 
   const [openModal, setOpenModal] = useState(false);
   const [isOver, setIsOver] = useState(false);
@@ -14,10 +14,11 @@ const KanbanColumn = ({ title, status, tasks, advisors = [], onCreateTask, onMov
     : [];
 
   const handleSaveTask = async (formData) => {
-    await onCreateTask(formData, status);
+    formData.append("statusKanban", status);
+
+    await onCreateTask(formData);
     setOpenModal(false);
   };
-
   return (
     <div className="kanban-column">
 
@@ -64,7 +65,7 @@ const KanbanColumn = ({ title, status, tasks, advisors = [], onCreateTask, onMov
         )}
 
         {columnTasks.map(task => (
-          <TaskCard key={task.id} task={task} onOpenDetails={(task) => { setSelectedTask(task) }} />
+          <TaskCard key={task.id} task={task} onOpenDetails={(task) => { setSelectedTask(task) }} onDelete={onDeleteTask}/>
         ))}
       </div>
 
@@ -81,17 +82,7 @@ const KanbanColumn = ({ title, status, tasks, advisors = [], onCreateTask, onMov
           task={selectedTask}
           advisors={advisors}
           onClose={() => setSelectedTask(null)}
-          onSave={(updatedTask) => {
-            console.log("Actualizar:", updatedTask);
-
-            setTasks(prev =>
-              prev.map(t =>
-                t.id === updatedTask.id ? updatedTask : t
-              )
-            );
-
-            setSelectedTask(null);
-          }}
+          onSave={onUpdateTask}
         />
       )}
 

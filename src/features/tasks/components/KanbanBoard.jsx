@@ -1,86 +1,100 @@
 import React, { useEffect, useState } from "react";
 import KanbanColumn from "./KanbanColumn";
-import { getTasksByBoardRequest } from "../../../services/taskService";
 import { getAllStudentsRequest } from "../../../services/adviserService";
+import {
+  getTasksRequest,
+  addTaskRequest,
+  updateTaskStatusRequest,
+  deleteTaskRequest,
+  updateTaskRequest
+} from "../../../services/adviserService";
 
-const KanbanBoard = ({ boardId, onCreateTask }) => {
-
+const KanbanBoard = ({ boardId }) => {
+    console.log("DEBUG KanbanBoard: received boardId =", boardId);
   const [tasks, setTasks] = useState([]);
   const [students, setStudents] = useState([]);
 
-  /*
-useEffect(() => {
-
   const loadData = async () => {
     try {
-      const [tasksData, studentsData] = await Promise.all([
-        getTasksByBoardRequest(boardId),
+      const [tasksRes, studentsRes] = await Promise.all([
+        getTasksRequest(),
         getAllStudentsRequest()
       ]);
 
-      console.log("tasks:", tasksData);
-      console.log("students:", studentsData);
-      setTasks(Array.isArray(tasksData) ? tasksData : []);
+      const tasksData = tasksRes?.data || tasksRes;
+      const studentsData = studentsRes?.data || studentsRes;
 
-      // cargar estudiantes
-      setStudents(Array.isArray(studentsData) ? studentsData : []);
+      // Filtrar tareas por el tablero del adviser
+      const filteredTasks = tasksData.filter(task => task.boardId === boardId);
+      console.log("DEBUG KanbanBoard: tasks for this board", filteredTasks);
+
+      setTasks(Array.isArray(filteredTasks) ? filteredTasks : []);
+
+      const studentsParsed =
+        studentsRes?.data || studentsRes?.students || studentsRes || [];
+      setStudents(Array.isArray(studentsParsed) ? studentsParsed : []);
 
     } catch (error) {
       console.error("Error cargando datos", error);
     }
   };
 
-  loadData();
-
-}, [boardId]);
-*/
-
-// Tarea de prueba
-
   useEffect(() => {
-
-    const fakeTask = {
-      id: Date.now(),
-      name: "Tarea de prueba",
-      description: "Arrástrame a otra columna",
-      statusKanban: "TODO",
-      color: "#ff5733"
-    };
-
-    setTasks([fakeTask]);
-
+    loadData();
   }, []);
-  const handleMoveTask = (taskId, newStatus) => {
-    console.log("Moviendo tarea:", taskId, "a", newStatus);
 
-    setTasks(prevTasks => {
-      const updated = prevTasks.map(task =>
-        task.id === Number(taskId)
-          ? { ...task, statusKanban: newStatus }
-          : task
-      );
-
-      console.log("Estado actualizado:", updated);
-
-      return updated;
-    });
-
+  const handleCreateTask = async (form) => {
     try {
-      // await updateTaskStatusRequest(taskId, newStatus);
+      await addTaskRequest(form);
+      await loadData();
     } catch (error) {
-      console.error("Error al actualizar");
+      console.error("Error creando tarea", error);
     }
   };
+
+  const handleMoveTask = async (taskId, newStatus) => {
+    try {
+      await updateTaskStatusRequest(taskId, newStatus);
+
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId ? { ...task, statusKanban: newStatus } : task
+        )
+      );
+    } catch (error) {
+      console.error("Error moviendo tarea", error);
+    }
+  };
+
+  const handleUpdateTask = async (id, data) => {
+    try {
+      await updateTaskRequest(id, data);
+      await loadData();
+    } catch (error) {
+      console.error("Error actualizando tarea", error);
+    }
+  };
+
+  const handleDeleteTask = async (id) => {
+    try {
+      await deleteTaskRequest(id);
+      await loadData();
+    } catch (error) {
+      console.error("Error eliminando tarea", error);
+    }
+  };
+
   return (
     <div className="kanban-board">
-
       <KanbanColumn
         title="Por hacer"
         status="TODO"
         tasks={tasks}
         advisors={students}
-        onCreateTask={onCreateTask}
+        onCreateTask={handleCreateTask}
         onMoveTask={handleMoveTask}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
       />
 
       <KanbanColumn
@@ -88,8 +102,10 @@ useEffect(() => {
         status="IN_PROGRESS"
         tasks={tasks}
         advisors={students}
-        onCreateTask={onCreateTask}
+        onCreateTask={handleCreateTask}
         onMoveTask={handleMoveTask}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
       />
 
       <KanbanColumn
@@ -97,10 +113,11 @@ useEffect(() => {
         status="DONE"
         tasks={tasks}
         advisors={students}
-        onCreateTask={onCreateTask}
+        onCreateTask={handleCreateTask}
         onMoveTask={handleMoveTask}
+        onUpdateTask={handleUpdateTask}
+        onDeleteTask={handleDeleteTask}
       />
-
     </div>
   );
 };

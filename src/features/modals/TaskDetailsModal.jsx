@@ -7,7 +7,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   const [form, setForm] = useState({
     name: "",
     studentIDs: [],
-    color: "",
+    color: "#ffffff",
     statusKanban: "",
     priority: "",
     startDate: "",
@@ -19,14 +19,25 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
   useEffect(() => {
     if (task) {
+
+      console.log("TASK COMPLETA:", task);
+      console.log("STUDENTS:", task.students);
+      console.log("studentIDs:", task.studentIDs);
+
+      const studentIDs = task?.students
+        ? task.students.map(s => s.studentID)
+        : Array.isArray(task?.studentIDs)
+          ? task.studentIDs
+          : [];
+
       setForm({
         name: task.name || "",
-        studentIDs: task.studentIDs || [],
+        studentIDs,
         color: task.color || "#ffffff",
         statusKanban: task.statusKanban || "",
         priority: task.priority || "",
-        startDate: task.startDate || "",
-        limitDate: task.limitDate || "",
+        startDate: task.startDate ? task.startDate.split("T")[0] : "",
+        limitDate: task.limitDate ? task.limitDate.split("T")[0] : "",
         description: task.description || ""
       });
     }
@@ -35,52 +46,42 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setForm({ ...form, [name]: value });
+    setForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
-    setErrors({
-      ...errors,
+    setErrors(prev => ({
+      ...prev,
       [name]: ""
-    });
+    }));
   };
 
   const handleStudentChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions);
-    const values = selectedOptions.map(option => Number(option.value));
+    const values = Array.from(e.target.selectedOptions)
+      .map(option => Number(option.value))
+      .filter(v => !isNaN(v));
 
-    setForm({ ...form, studentIDs: values });
+    setForm(prev => ({
+      ...prev,
+      studentIDs: values
+    }));
 
-    setErrors({
-      ...errors,
+    setErrors(prev => ({
+      ...prev,
       studentIDs: ""
-    });
+    }));
   };
 
   const validate = () => {
     const newErrors = {};
 
-    if (!form.name.trim()) {
-      newErrors.name = "El nombre es obligatorio";
-    }
-
-    if (form.studentIDs.length === 0) {
-      newErrors.studentIDs = "Debes asignar al menos un estudiante";
-    }
-
-    if (!form.statusKanban) {
-      newErrors.statusKanban = "Selecciona un estado";
-    }
-
-    if (!form.priority) {
-      newErrors.priority = "Selecciona una prioridad";
-    }
-
-    if (!form.startDate) {
-      newErrors.startDate = "Fecha inicio obligatoria";
-    }
-
-    if (!form.limitDate) {
-      newErrors.limitDate = "Fecha límite obligatoria";
-    }
+    if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
+    if (!form.studentIDs.length) newErrors.studentIDs = "Debes asignar al menos un estudiante";
+    if (!form.statusKanban) newErrors.statusKanban = "Selecciona un estado";
+    if (!form.priority) newErrors.priority = "Selecciona una prioridad";
+    if (!form.startDate) newErrors.startDate = "Fecha inicio obligatoria";
+    if (!form.limitDate) newErrors.limitDate = "Fecha límite obligatoria";
 
     return newErrors;
   };
@@ -95,12 +96,19 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
       return;
     }
 
+    // 🔥 BACKEND USA JSON → NO FormData
     const dataToSend = {
-      ...form,
-      id: task.id
+      name: form.name,
+      description: form.description,
+      statusKanban: form.statusKanban,
+      color: form.color,
+      priority: form.priority,
+      startDate: form.startDate,
+      limitDate: form.limitDate,
+      studentIDs: form.studentIDs
     };
 
-    onSave(dataToSend);
+    onSave(task.id, dataToSend);
   };
 
   if (!task) return null;
@@ -126,11 +134,10 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               onChange={handleChange}
               error={errors.name}
               variant="modal"
-              size="md"
             />
           </div>
 
-          {/* Asignar */}
+          {/* Estudiantes */}
           <div className="form-group row-align">
             <label>Asignar</label>
             <select
@@ -138,30 +145,35 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               multiple
               value={form.studentIDs}
               onChange={handleStudentChange}
-              style={{ height: "60px", width: "380px" }}
+              style={{ height: "80px", width: "380px" }}
             >
-              {advisors.map((student) => (
-                <option key={student.id} value={student.id}>
-                  {student.firstName} {student.lastName}
-                </option>
-              ))}
+              {advisors.length === 0 ? (
+                <option disabled>No hay estudiantes</option>
+              ) : (
+                advisors.map((student) => (
+                  <option
+                    key={student.studentID}
+                    value={student.studentID}
+                  >
+                    {student.firstName} {student.lastName}
+                  </option>
+                ))
+              )}
             </select>
-            {errors.studentIDs && <p className="error-message">{errors.studentIDs}</p>}
+
+            {errors.studentIDs && (
+              <p className="error-message">{errors.studentIDs}</p>
+            )}
           </div>
 
           {/* Color */}
           <div className="form-group row-align">
             <label>Color</label>
-            <input style={{
-              borderRadius: '10px',
-              border: '10px',
-              cursor: 'pointer'
-            }}
-              className="input-modal"
+            <input
               type="color"
-              value={form.color || "#ffffff"}
+              value={form.color}
               onChange={(e) =>
-                setForm({ ...form, color: e.target.value })
+                setForm(prev => ({ ...prev, color: e.target.value }))
               }
             />
           </div>
@@ -180,7 +192,10 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               <option value="IN_PROGRESS">En progreso</option>
               <option value="DONE">Completado</option>
             </select>
-            {errors.statusKanban && <p className="error-message">{errors.statusKanban}</p>}
+
+            {errors.statusKanban && (
+              <p className="error-message">{errors.statusKanban}</p>
+            )}
           </div>
 
           {/* Prioridad */}
@@ -197,7 +212,10 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               <option value="MEDIUM">Media</option>
               <option value="HIGH">Alta</option>
             </select>
-            {errors.priority && <p className="error-message">{errors.priority}</p>}
+
+            {errors.priority && (
+              <p className="error-message">{errors.priority}</p>
+            )}
           </div>
 
           {/* Fechas */}
@@ -210,7 +228,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
                 value={form.startDate}
                 onChange={handleChange}
                 error={errors.startDate}
-                variant="modal"
               />
             </div>
 
@@ -222,12 +239,9 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
                 value={form.limitDate}
                 onChange={handleChange}
                 error={errors.limitDate}
-                variant="modal"
               />
             </div>
           </div>
-
-
 
           {/* Descripción */}
           <div className="form-group">
@@ -240,17 +254,17 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             />
           </div>
 
-
-
           {/* Botones */}
           <div className="form-footer">
-            <Button variant="secondary" size="md" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Cancelar
             </Button>
 
-            <Button variant="primary" size="md" type="submit">
+            <Button variant="primary" type="submit">
               Guardar Cambios
             </Button>
+
+
           </div>
 
         </form>

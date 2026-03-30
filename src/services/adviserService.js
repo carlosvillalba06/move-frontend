@@ -2,15 +2,21 @@ const API_URL = "/adviser";
 
 import { apiFetch } from "./api";
 
-// Registrar estudiante (CORREGIDO)
-export const registerStudentRequest = async (student) => {
+/* =========================
+   STUDENTS
+========================= */
+
+export const registerStudentRequest = async ({ email, firstName, lastName }) => {
   return await apiFetch(`${API_URL}/registerStudent`, {
     method: "POST",
-    body: JSON.stringify(student)
+    body: JSON.stringify({
+      email,
+      firstName,
+      lastName
+    })
   });
 };
 
-// Agregar estudiante al board
 export const addStudentToBoardRequest = async (email) => {
   return await apiFetch(`${API_URL}/addStudentToBoard`, {
     method: "POST",
@@ -18,28 +24,29 @@ export const addStudentToBoardRequest = async (email) => {
   });
 };
 
-// Obtener todos los estudiantes
 export const getAllStudentsRequest = async () => {
   return await apiFetch(`${API_URL}/getAllStudents`, {
     method: "GET"
   });
 };
 
-//  Deshabilitar estudiante
 export const disableBoardStudentRequest = async (id) => {
   return await apiFetch(`${API_URL}/disableBoardStudent?id=${id}`, {
     method: "POST"
   });
 };
 
-//  Habilitar estudiante
 export const enableBoardStudentRequest = async (id) => {
   return await apiFetch(`${API_URL}/enableBoardStudent?id=${id}`, {
     method: "POST"
   });
 };
 
-// Subir logo
+
+/* =========================
+   ADVISER
+========================= */
+
 export const uploadLogoAdviserRequest = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -50,25 +57,63 @@ export const uploadLogoAdviserRequest = async (file) => {
   });
 };
 
-//  OJO: tu backend tiene typo → "Adivser"
-export const updateAdviserInformationRequest = async (adviserData) => {
+export const updateAdviserInformationRequest = async ({ firstName, lastName }) => {
   return await apiFetch(`${API_URL}/updateAdivserInformation`, {
     method: "POST",
-    body: JSON.stringify(adviserData)
+    body: JSON.stringify({
+      firstName,
+      lastName
+    })
   });
 };
 
-//  Obtener info adviser
 export const getAdviserInformationRequest = async () => {
   return await apiFetch(`${API_URL}/getAdviserInformation`, {
     method: "GET"
   });
 };
 
-//  Crear tarea (ya estaba bien)
+
+/* =========================
+   TASKS
+========================= */
+
 export const addTaskRequest = async (formData) => {
-  return await apiFetch(`${API_URL}/addTask`, {
+  return await apiFetch(`/adviser/createTask`, {
     method: "POST",
     body: formData
+  });
+};
+
+export const getTasksRequest = async () => {
+  return await apiFetch(`${API_URL}/getTasks`, {
+    method: "GET"
+  });
+};
+
+export const deleteTaskRequest = async (id) => {
+  return await apiFetch(`${API_URL}/deleteTask/${id}`, {
+    method: "DELETE"
+  });
+};
+
+export const updateTaskRequest = async (id, taskData) => {
+  return await apiFetch(`${API_URL}/task/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(taskData)
+  });
+};
+const statusMap = {
+  "TODO": "ToDo",
+  "IN_PROGRESS": "Doing",
+  "DONE": "Done"
+};
+
+export const updateTaskStatusRequest = async (id, status) => {
+  return await apiFetch(`${API_URL}/task/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ 
+      status: statusMap[status] 
+    })
   });
 };
