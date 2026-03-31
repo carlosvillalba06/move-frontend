@@ -9,8 +9,7 @@ import {
   updateTaskRequest
 } from "../../../services/adviserService";
 
-const KanbanBoard = ({ boardId }) => {
-    console.log("DEBUG KanbanBoard: received boardId =", boardId);
+const KanbanBoard = () => {
   const [tasks, setTasks] = useState([]);
   const [students, setStudents] = useState([]);
 
@@ -24,16 +23,8 @@ const KanbanBoard = ({ boardId }) => {
       const tasksData = tasksRes?.data || tasksRes;
       const studentsData = studentsRes?.data || studentsRes;
 
-      // Filtrar tareas por el tablero del adviser
-      const filteredTasks = tasksData.filter(task => task.boardId === boardId);
-      console.log("DEBUG KanbanBoard: tasks for this board", filteredTasks);
-
-      setTasks(Array.isArray(filteredTasks) ? filteredTasks : []);
-
-      const studentsParsed =
-        studentsRes?.data || studentsRes?.students || studentsRes || [];
-      setStudents(Array.isArray(studentsParsed) ? studentsParsed : []);
-
+      setTasks(Array.isArray(tasksData) ? tasksData : []);
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
     } catch (error) {
       console.error("Error cargando datos", error);
     }
@@ -53,12 +44,16 @@ const KanbanBoard = ({ boardId }) => {
   };
 
   const handleMoveTask = async (taskId, newStatus) => {
+    console.log("MOVIENDO TAREA:", taskId, newStatus);
+
     try {
       await updateTaskStatusRequest(taskId, newStatus);
 
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === taskId ? { ...task, statusKanban: newStatus } : task
+      setTasks(prev =>
+        prev.map(task =>
+          task.id === taskId
+            ? { ...task, statusKanban: newStatus }
+            : task
         )
       );
     } catch (error) {
@@ -66,9 +61,9 @@ const KanbanBoard = ({ boardId }) => {
     }
   };
 
-  const handleUpdateTask = async (id, data) => {
+  const handleUpdateTask = async (id, formData) => {
     try {
-      await updateTaskRequest(id, data);
+      await updateTaskRequest(id, formData);
       await loadData();
     } catch (error) {
       console.error("Error actualizando tarea", error);

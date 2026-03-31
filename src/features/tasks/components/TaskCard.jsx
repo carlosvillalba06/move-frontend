@@ -1,6 +1,4 @@
 import React, { useRef, useState } from "react";
-import Button from "../../../components/Button";
-
 import ConfirmAlert from "../../modals/ConfirmAlert";
 import SuccessAlert from "../../modals/SuccessAlert";
 
@@ -8,25 +6,21 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
 
   const isDragging = useRef(false);
 
-  // 🔥 mismo patrón que Configuracion
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // 🔥 click botón
+  const taskId = task.id;
+
   const handleDelete = (e) => {
     e.stopPropagation();
     setConfirmOpen(true);
   };
 
-  // 🔥 confirmar eliminación
   const handleConfirmDelete = () => {
-    onDelete(task.id);
+    onDelete(taskId);
 
     setConfirmOpen(false);
-
-    // 🔥 igual que Configuracion
     setAlertMessage("Tarea eliminada correctamente");
     setAlertOpen(true);
   };
@@ -37,8 +31,13 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
         className="task-card"
         draggable
         onDragStart={(e) => {
+          console.log("DRAG START:", taskId);
+
           isDragging.current = true;
-          e.dataTransfer.setData("taskId", task.id);
+
+          // ✅ usar tipo estándar
+          e.dataTransfer.setData("text/plain", String(taskId));
+          e.dataTransfer.effectAllowed = "move";
         }}
         onDragEnd={() => {
           setTimeout(() => {
@@ -54,7 +53,7 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
         }}
         style={{
           borderLeft: `6px solid ${task.color || "#ccc"}`,
-          cursor: "pointer",
+          cursor: "grab",
           position: "relative"
         }}
       >
@@ -63,14 +62,11 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
           onClick={handleDelete}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          <svg viewBox="0 0 24 24" className="delete-icon">
-            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-          </svg>
-
+          X
         </button>
-        <h4>{task.name}</h4>
-        <p>{task.description}</p>
 
+        <h4>{task.name}</h4>
+        <p>{task.notes || "Sin descripción"}</p>
       </div>
 
       <ConfirmAlert

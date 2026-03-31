@@ -20,15 +20,9 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   useEffect(() => {
     if (task) {
 
-      console.log("TASK COMPLETA:", task);
-      console.log("STUDENTS:", task.students);
-      console.log("studentIDs:", task.studentIDs);
-
-      const studentIDs = task?.students
-        ? task.students.map(s => s.studentID)
-        : Array.isArray(task?.studentIDs)
-          ? task.studentIDs
-          : [];
+      const studentIDs = Array.isArray(task?.students)
+        ? task.students
+        : [];
 
       setForm({
         name: task.name || "",
@@ -36,9 +30,10 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
         color: task.color || "#ffffff",
         statusKanban: task.statusKanban || "",
         priority: task.priority || "",
-        startDate: task.startDate ? task.startDate.split("T")[0] : "",
-        limitDate: task.limitDate ? task.limitDate.split("T")[0] : "",
-        description: task.description || ""
+        limitDate: task.dateOfEnd
+          ? task.dateOfEnd.split("T")[0]
+          : "",
+        description: task.notes || "" // 🔥 FIX
       });
     }
   }, [task]);
@@ -80,37 +75,33 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     if (!form.studentIDs.length) newErrors.studentIDs = "Debes asignar al menos un estudiante";
     if (!form.statusKanban) newErrors.statusKanban = "Selecciona un estado";
     if (!form.priority) newErrors.priority = "Selecciona una prioridad";
-    if (!form.startDate) newErrors.startDate = "Fecha inicio obligatoria";
     if (!form.limitDate) newErrors.limitDate = "Fecha límite obligatoria";
 
     return newErrors;
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const validationErrors = validate();
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    // 🔥 BACKEND USA JSON → NO FormData
-    const dataToSend = {
+    const data = {
       name: form.name,
-      description: form.description,
+      description: form.description?.trim() || "Sin descripción",
       statusKanban: form.statusKanban,
       color: form.color,
       priority: form.priority,
-      startDate: form.startDate,
       limitDate: form.limitDate,
       studentIDs: form.studentIDs
     };
 
-    onSave(task.id, dataToSend);
-  };
+    console.log("DATA:", data);
 
+    onSave(task.id, data);
+  };
   if (!task) return null;
 
   return (
@@ -221,17 +212,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
           {/* Fechas */}
           <div className="form-grid">
             <div className="form-group">
-              <label>Inicio</label>
-              <Input
-                type="date"
-                name="startDate"
-                value={form.startDate}
-                onChange={handleChange}
-                error={errors.startDate}
-              />
-            </div>
-
-            <div className="form-group">
               <label>Límite</label>
               <Input
                 type="date"
@@ -263,8 +243,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             <Button variant="primary" type="submit">
               Guardar Cambios
             </Button>
-
-
           </div>
 
         </form>

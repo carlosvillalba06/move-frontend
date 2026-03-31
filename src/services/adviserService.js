@@ -79,7 +79,7 @@ export const getAdviserInformationRequest = async () => {
 ========================= */
 
 export const addTaskRequest = async (formData) => {
-  return await apiFetch(`/adviser/createTask`, {
+  return await apiFetch(`${API_URL}/createTask`, {
     method: "POST",
     body: formData
   });
@@ -97,10 +97,10 @@ export const deleteTaskRequest = async (id) => {
   });
 };
 
-export const updateTaskRequest = async (id, taskData) => {
-  return await apiFetch(`${API_URL}/task/${id}`, {
+export const updateTaskRequest = async (id, data) => {
+  return apiFetch(`/adviser/task/${id}`, {
     method: "PUT",
-    body: JSON.stringify(taskData)
+    body: data
   });
 };
 const statusMap = {
