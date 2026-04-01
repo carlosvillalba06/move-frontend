@@ -51,7 +51,7 @@ export const uploadLogoAdviserRequest = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  return await apiFetch(`${API_URL}/uploadLogo`, {
+  return await apiFetch("/adviser/uploadLogo", {
     method: "POST",
     body: formData
   });

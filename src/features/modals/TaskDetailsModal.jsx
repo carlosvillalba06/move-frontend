@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
+import Select from "react-select";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
+import ConfirmAlert from "../modals/ConfirmAlert";
+import SuccessAlert from "../modals/SuccessAlert";
 
 const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -10,18 +17,28 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     color: "#ffffff",
     statusKanban: "",
     priority: "",
-    startDate: "",
     limitDate: "",
-    description: ""
+    description: "",
+    files: [] 
   });
 
+  console.log("TAREA EN DETALLE:", task);
+  const [removedFiles, setRemovedFiles] = useState([]); 
   const [errors, setErrors] = useState({});
+
+  const studentOptions = advisors.map(student => ({
+    value: student.studentID,
+    label: `${student.firstName} ${student.lastName}`
+  }));
+
+  const selectedStudents = studentOptions.filter(opt => 
+    form.studentIDs.includes(opt.value)
+  );
 
   useEffect(() => {
     if (task) {
-
       const studentIDs = Array.isArray(task?.students)
-        ? task.students
+        ? task.students.filter(id => id !== undefined && id !== null)
         : [];
 
       setForm({
@@ -30,11 +47,12 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
         color: task.color || "#ffffff",
         statusKanban: task.statusKanban || "",
         priority: task.priority || "",
-        limitDate: task.dateOfEnd
-          ? task.dateOfEnd.split("T")[0]
-          : "",
-        description: task.notes || "" // 🔥 FIX
+        limitDate: task.dateOfEnd || "",
+        description: task.notes || "",
+        files: []
       });
+
+      setRemovedFiles([]); 
     }
   }, [task]);
 
@@ -52,11 +70,9 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     }));
   };
 
-  const handleStudentChange = (e) => {
-    const values = Array.from(e.target.selectedOptions)
-      .map(option => Number(option.value))
-      .filter(v => !isNaN(v));
-
+  const handleSelectChange = (selectedOptions) => {
+    const values = selectedOptions ? selectedOptions.map(opt => opt.value) : [];
+    
     setForm(prev => ({
       ...prev,
       studentIDs: values
@@ -66,6 +82,38 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
       ...prev,
       studentIDs: ""
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    setForm(prev => ({
+      ...prev,
+      files
+    }));
+  };
+
+  const handleRemoveExistingFile = (fileId) => {
+    setRemovedFiles(prev => [...prev, fileId]);
+  };
+
+  const previewFile = (file) => {
+    try {
+      const byteCharacters = atob(file.file);
+      const byteNumbers = new Array(byteCharacters.length);
+
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: file.fileType });
+
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Error al abrir archivo:", error);
+    }
   };
 
   const validate = () => {
@@ -79,6 +127,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
     return newErrors;
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -88,20 +137,38 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
       return;
     }
 
-    const data = {
-      name: form.name,
-      description: form.description?.trim() || "Sin descripción",
-      statusKanban: form.statusKanban,
-      color: form.color,
-      priority: form.priority,
-      limitDate: form.limitDate,
-      studentIDs: form.studentIDs
-    };
-
-    console.log("DATA:", data);
-
-    onSave(task.id, data);
+    setConfirmOpen(true); 
   };
+
+  const handleConfirmSave = () => {
+    const formData = new FormData();
+
+    formData.append("name", form.name);
+    formData.append("description", form.description?.trim() || "Sin descripción");
+    formData.append("statusKanban", form.statusKanban);
+    formData.append("color", form.color);
+    formData.append("priority", form.priority);
+    formData.append("limitDate", form.limitDate);
+
+    form.studentIDs.forEach(id => {
+      formData.append("studentIDs", String(id));
+    });
+
+    form.files.forEach(file => {
+      formData.append("files", file);
+    });
+
+    removedFiles.forEach(id => {
+      formData.append("removedFiles", id);
+    });
+
+    onSave(task.id, formData);
+
+    setConfirmOpen(false);
+    setAlertMessage("Tarea actualizada correctamente");
+    setAlertOpen(true);
+  };
+
   if (!task) return null;
 
   return (
@@ -116,7 +183,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
         <form onSubmit={handleSubmit} className="task-form">
 
-          {/* Nombre */}
           <div className="form-group row-align">
             <label>Nombre</label>
             <Input
@@ -128,36 +194,24 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             />
           </div>
 
-          {/* Estudiantes */}
           <div className="form-group row-align">
             <label>Asignar</label>
-            <select
-              className="input input-modal"
-              multiple
-              value={form.studentIDs}
-              onChange={handleStudentChange}
-              style={{ height: "80px", width: "380px" }}
-            >
-              {advisors.length === 0 ? (
-                <option disabled>No hay estudiantes</option>
-              ) : (
-                advisors.map((student) => (
-                  <option
-                    key={student.studentID}
-                    value={student.studentID}
-                  >
-                    {student.firstName} {student.lastName}
-                  </option>
-                ))
+            <div style={{ width: "380px" }}>
+              <Select
+                isMulti
+                options={studentOptions}
+                value={selectedStudents}
+                onChange={handleSelectChange}
+                placeholder="Seleccionar estudiantes..."
+                noOptionsMessage={() => "No hay estudiantes"}
+                classNamePrefix="react-select"
+              />
+              {errors.studentIDs && (
+                <p className="error-message">{errors.studentIDs}</p>
               )}
-            </select>
-
-            {errors.studentIDs && (
-              <p className="error-message">{errors.studentIDs}</p>
-            )}
+            </div>
           </div>
 
-          {/* Color */}
           <div className="form-group row-align">
             <label>Color</label>
             <input
@@ -169,7 +223,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             />
           </div>
 
-          {/* Status */}
           <div className="form-group">
             <label>Status</label>
             <select
@@ -183,13 +236,8 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               <option value="IN_PROGRESS">En progreso</option>
               <option value="DONE">Completado</option>
             </select>
-
-            {errors.statusKanban && (
-              <p className="error-message">{errors.statusKanban}</p>
-            )}
           </div>
 
-          {/* Prioridad */}
           <div className="form-group">
             <label>Prioridad</label>
             <select
@@ -203,27 +251,75 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               <option value="MEDIUM">Media</option>
               <option value="HIGH">Alta</option>
             </select>
-
-            {errors.priority && (
-              <p className="error-message">{errors.priority}</p>
-            )}
           </div>
 
-          {/* Fechas */}
-          <div className="form-grid">
+          <div className="form-group">
+            <label>Límite</label>
+            <Input
+              type="date"
+              name="limitDate"
+              value={form.limitDate}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Subir nuevos archivos</label>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {task.files?.length > 0 && (
             <div className="form-group">
-              <label>Límite</label>
-              <Input
-                type="date"
-                name="limitDate"
-                value={form.limitDate}
-                onChange={handleChange}
-                error={errors.limitDate}
-              />
-            </div>
-          </div>
+              <label>Archivos actuales</label>
 
-          {/* Descripción */}
+              {task.files
+                .filter(file => !removedFiles.includes(file.id))
+                .map(file => (
+                  <div
+                    key={file.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "5px"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => previewFile(file)}
+                      style={{
+                        color: "blue",
+                        textDecoration: "underline",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {file.fileName}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExistingFile(file.id)}
+                      style={{
+                        color: "red",
+                        border: "none",
+                        background: "none",
+                        cursor: "pointer",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+            </div>
+          )}
+
           <div className="form-group">
             <label>Descripción</label>
             <textarea
@@ -234,7 +330,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             />
           </div>
 
-          {/* Botones */}
           <div className="form-footer">
             <Button variant="secondary" onClick={onClose}>
               Cancelar
@@ -247,6 +342,19 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
         </form>
       </div>
+
+      <ConfirmAlert
+        isOpen={confirmOpen}
+        message="¿Seguro que quieres guardar los cambios?"
+        onConfirm={handleConfirmSave}
+        onCancel={() => setConfirmOpen(false)}
+      />
+
+      <SuccessAlert
+        isOpen={alertOpen}
+        mensage={alertMessage}
+        onClose={() => setAlertOpen(false)}
+      />
     </div>
   );
 };

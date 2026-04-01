@@ -36,25 +36,13 @@ export const getAdminInformationRequest = async () => {
 
 // Subir logo del admin
 export const uploadLogoRequest = async (file) => {
-
-  const token = localStorage.getItem("token");
-
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("http://localhost:8080/api/admin/uploadLogo", {
+  return await apiFetch("/admin/uploadLogo", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`
-    },
     body: formData
   });
-
-  if (!response.ok) {
-    throw new Error("Error subiendo imagen");
-  }
-
-  return response.json();
 };
 
 // Actualizar informacion del admin

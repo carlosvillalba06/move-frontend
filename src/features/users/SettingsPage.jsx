@@ -16,7 +16,7 @@ import {
 } from "../../services/adminService";
 
 import {
- getAdviserInformationRequest,
+  getAdviserInformationRequest,
   uploadLogoAdviserRequest,
   updateAdviserInformationRequest
 } from "../../services/adviserService";
@@ -79,8 +79,8 @@ const Configuracion = () => {
             lastName: info.lastName || ""
           });
 
-          if (info.logoBase64) {
-            setPreviewImage(`data:image/png;base64,${info.logoBase64}`);
+          if (info.logo) {
+            setPreviewImage(`data:image/png;base64,${info.logo}`);
           }
         }
       } catch (error) {
@@ -91,24 +91,36 @@ const Configuracion = () => {
     if (role) fetchInfo();
   }, [role, service]);
 
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+ const handleImageChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
+  try {
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewImage(reader.result);
     };
     reader.readAsDataURL(file);
 
-    try {
-      await service.upload(file);
-      setAlertMessage("Imagen actualizada correctamente");
-      setAlertOpen(true);
-    } catch (error) {
-      console.error("Error subiendo imagen:", error);
-    }
-  };
+    await service.upload(file);
+
+    const response = await service.getInfo();
+    const info = response?.data || response;
+    if (info?.logo) {
+     setPreviewImage(`data:image/png;base64,${info.logo}`);
+      }
+    setAlertMessage("Imagen actualizada correctamente");
+    setAlertOpen(true);
+    setData(info);
+
+  } catch (error) {
+    console.error("Error subiendo imagen:", error);
+    setAlertMessage("Error al subir la imagen");
+    setAlertOpen(true);
+  }
+
+  
+};
 
   const handleNameChange = (e) => {
     setNameForm({
@@ -287,7 +299,7 @@ const Configuracion = () => {
 
       <SuccessAlert
         isOpen={alertOpen}
-        mensage={alertMessage}
+        message={alertMessage}
         onClose={() => setAlertOpen(false)} />
 
 
