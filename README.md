@@ -1,16 +1,38 @@
-# React + Vite
+#📘 Bitácora Digital - Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema web para la gestión de prácticas profesionales y servicio social, enfocado en la administración de tareas, estudiantes y seguimiento de actividades mediante un tablero tipo Kanban.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+#🚀 Descripción
 
-## React Compiler
+Esta aplicación web forma parte de un sistema integral de bitácora digital que permite a asesores y administradores gestionar:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Usuarios (estudiantes)
+Proyectos
+Tareas y subtareas
+Evidencias
+Seguimiento del progreso
 
-## Expanding the ESLint configuration
+El sistema está diseñado para mejorar la organización, trazabilidad y validación de actividades durante el proceso de prácticas profesionales.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+#🎯 Objetivo
+
+Centralizar la gestión de tareas y seguimiento académico mediante una interfaz web intuitiva, permitiendo:
+
+Asignación de tareas a estudiantes
+Visualización de progreso mediante tablero tipo Kanban (Jira/Trello)
+Validación de actividades
+Gestión de evidencias y archivos
+🧩 Funcionalidades
+👨‍🏫 Asesor / Administrador
+📋 Gestión de tareas y subtareas
+🧑‍🎓 Asignación de estudiantes a tareas
+🎯 Control de estados (TODO, IN_PROGRESS, DONE)
+📎 Subida y visualización de archivos
+🎨 Personalización de tareas (color, prioridad)
+📊 Seguimiento del progreso
+🛠️ Tecnologías
+⚛️ React
+⚡ Vite
+🎨 CSS / Custom Components
+🔗 Integración con API REST (Backend en Spring Boot)
