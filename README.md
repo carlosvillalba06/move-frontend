@@ -1,4 +1,4 @@
-#📘 Bitácora Digital - Web App
+#📘 MOVE - Web App
 
 Sistema web para la gestión de prácticas profesionales y servicio social, enfocado en la administración de tareas, estudiantes y seguimiento de actividades mediante un tablero tipo Kanban.
 
