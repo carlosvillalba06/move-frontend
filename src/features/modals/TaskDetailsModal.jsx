@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
-import Select from "react-select";
+import StudentMultiSelect from "../../components/StudentMultiSelect";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
-import ConfirmAlert from "../modals/ConfirmAlert";
-import SuccessAlert from "../modals/SuccessAlert";
+import ConfirmAlert from "./ConfirmAlert";
 
 const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -19,31 +16,24 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     priority: "",
     limitDate: "",
     description: "",
-    files: [] 
+    files: []
   });
 
-  console.log("TAREA EN DETALLE:", task);
-  const [removedFiles, setRemovedFiles] = useState([]); 
+  const [removedFiles, setRemovedFiles] = useState([]);
   const [errors, setErrors] = useState({});
 
-  const studentOptions = advisors.map(student => ({
-    value: student.studentID,
-    label: `${student.firstName} ${student.lastName}`
-  }));
-
-  const selectedStudents = studentOptions.filter(opt => 
-    form.studentIDs.includes(opt.value)
-  );
+  const normalizeIds = (arr) => (arr || []).map(Number);
 
   useEffect(() => {
     if (task) {
-      const studentIDs = Array.isArray(task?.students)
-        ? task.students.filter(id => id !== undefined && id !== null)
-        : [];
+
+      const parsedStudents = (task.students || []).map(s =>
+        typeof s === "object" ? Number(s.studentID || s.id) : Number(s)
+      );
 
       setForm({
         name: task.name || "",
-        studentIDs,
+        studentIDs: normalizeIds(parsedStudents),
         color: task.color || "#ffffff",
         statusKanban: task.statusKanban || "",
         priority: task.priority || "",
@@ -52,7 +42,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
         files: []
       });
 
-      setRemovedFiles([]); 
+      setRemovedFiles([]);
     }
   }, [task]);
 
@@ -70,12 +60,12 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     }));
   };
 
-  const handleSelectChange = (selectedOptions) => {
-    const values = selectedOptions ? selectedOptions.map(opt => opt.value) : [];
-    
+  const handleSelectChange = (ids) => {
+    const cleanIds = normalizeIds(ids);
+
     setForm(prev => ({
       ...prev,
-      studentIDs: values
+      studentIDs: cleanIds
     }));
 
     setErrors(prev => ({
@@ -85,11 +75,9 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-
     setForm(prev => ({
       ...prev,
-      files
+      files: Array.from(e.target.files)
     }));
   };
 
@@ -106,11 +94,14 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
 
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: file.fileType });
+      const blob = new Blob(
+        [new Uint8Array(byteNumbers)],
+        { type: file.fileType }
+      );
 
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
+
     } catch (error) {
       console.error("Error al abrir archivo:", error);
     }
@@ -137,22 +128,24 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
       return;
     }
 
-    setConfirmOpen(true); 
+    setConfirmOpen(true);
   };
 
   const handleConfirmSave = () => {
     const formData = new FormData();
 
     formData.append("name", form.name);
-    formData.append("description", form.description?.trim() || "Sin descripción");
+    formData.append("description", form.description || "");
     formData.append("statusKanban", form.statusKanban);
     formData.append("color", form.color);
     formData.append("priority", form.priority);
     formData.append("limitDate", form.limitDate);
 
-    form.studentIDs.forEach(id => {
-      formData.append("studentIDs", String(id));
-    });
+    formData.append("studentIDs", JSON.stringify(form.studentIDs));
+
+    console.log("UPDATE studentIDs:", form.studentIDs);
+    console.log("TIPOS:", form.studentIDs.map(x => typeof x));
+    console.log("JSON:", JSON.stringify(form.studentIDs));
 
     form.files.forEach(file => {
       formData.append("files", file);
@@ -165,8 +158,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     onSave(task.id, formData);
 
     setConfirmOpen(false);
-    setAlertMessage("Tarea actualizada correctamente");
-    setAlertOpen(true);
   };
 
   if (!task) return null;
@@ -194,22 +185,18 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             />
           </div>
 
-          <div className="form-group row-align">
-            <label>Asignar</label>
-            <div style={{ width: "380px" }}>
-              <Select
-                isMulti
-                options={studentOptions}
-                value={selectedStudents}
-                onChange={handleSelectChange}
-                placeholder="Seleccionar estudiantes..."
-                noOptionsMessage={() => "No hay estudiantes"}
-                classNamePrefix="react-select"
-              />
-              {errors.studentIDs && (
-                <p className="error-message">{errors.studentIDs}</p>
-              )}
-            </div>
+          <div className="form-group">
+            <label>Asignar estudiantes</label>
+
+            <StudentMultiSelect
+              students={advisors}
+              selected={form.studentIDs}
+              onChange={handleSelectChange}
+            />
+
+            {errors.studentIDs && (
+              <p className="error-message">{errors.studentIDs}</p>
+            )}
           </div>
 
           <div className="form-group row-align">
@@ -226,7 +213,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
           <div className="form-group">
             <label>Status</label>
             <select
-              className="input input-modal"
               name="statusKanban"
               value={form.statusKanban}
               onChange={handleChange}
@@ -241,7 +227,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
           <div className="form-group">
             <label>Prioridad</label>
             <select
-              className="input input-modal"
               name="priority"
               value={form.priority}
               onChange={handleChange}
@@ -254,7 +239,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label>Límite</label>
+            <label>Fecha límite</label>
             <Input
               type="date"
               name="limitDate"
@@ -265,11 +250,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
           <div className="form-group">
             <label>Subir nuevos archivos</label>
-            <input
-              type="file"
-              multiple
-              onChange={handleFileChange}
-            />
+            <input type="file" multiple onChange={handleFileChange} />
           </div>
 
           {task.files?.length > 0 && (
@@ -279,40 +260,12 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               {task.files
                 .filter(file => !removedFiles.includes(file.id))
                 .map(file => (
-                  <div
-                    key={file.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "5px"
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => previewFile(file)}
-                      style={{
-                        color: "blue",
-                        textDecoration: "underline",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer"
-                      }}
-                    >
+                  <div key={file.id} style={{ display: "flex", justifyContent: "space-between" }}>
+                    <button type="button" onClick={() => previewFile(file)}>
                       {file.fileName}
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveExistingFile(file.id)}
-                      style={{
-                        color: "red",
-                        border: "none",
-                        background: "none",
-                        cursor: "pointer",
-                        fontWeight: "bold"
-                      }}
-                    >
+                    <button type="button" onClick={() => handleRemoveExistingFile(file.id)}>
                       ✕
                     </button>
                   </div>
@@ -323,7 +276,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
           <div className="form-group">
             <label>Descripción</label>
             <textarea
-              className="input input-modal"
               name="description"
               value={form.description}
               onChange={handleChange}
@@ -345,15 +297,9 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
       <ConfirmAlert
         isOpen={confirmOpen}
-        message="¿Seguro que quieres guardar los cambios?"
+        message="¿Deseas guardar los cambios?"
         onConfirm={handleConfirmSave}
         onCancel={() => setConfirmOpen(false)}
-      />
-
-      <SuccessAlert
-        isOpen={alertOpen}
-        mensage={alertMessage}
-        onClose={() => setAlertOpen(false)}
       />
     </div>
   );

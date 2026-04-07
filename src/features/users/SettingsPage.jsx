@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import userPlaceholder from "../../assets/userMOVE.png";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import DashboardSidebar from "../../components/DashboardSidebar";
-import SuccessAlert from "../modals/SuccessAlert";
+import SuccessAlert from "../modals/successAlert";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import { useAuth } from "../../services/authContext";

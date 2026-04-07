@@ -1,13 +1,10 @@
 import React, { useRef, useState } from "react";
 import ConfirmAlert from "../../modals/ConfirmAlert";
-import SuccessAlert from "../../modals/SuccessAlert";
 
 const TaskCard = ({ task, onOpenDetails, onDelete }) => {
 
   const isDragging = useRef(false);
 
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const taskId = task.id;
@@ -21,8 +18,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
     onDelete(taskId);
 
     setConfirmOpen(false);
-    setAlertMessage("Tarea eliminada correctamente");
-    setAlertOpen(true);
   };
 
   return (
@@ -35,7 +30,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
 
           isDragging.current = true;
 
-          // ✅ usar tipo estándar
           e.dataTransfer.setData("text/plain", String(taskId));
           e.dataTransfer.effectAllowed = "move";
         }}
@@ -76,11 +70,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
         onCancel={() => setConfirmOpen(false)}
       />
 
-      <SuccessAlert
-        isOpen={alertOpen}
-        mensage={alertMessage}
-        onClose={() => setAlertOpen(false)}
-      />
     </>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import KanbanColumn from "./KanbanColumn";
 import { getAllStudentsRequest } from "../../../services/adviserService";
+import SuccessAlert from "../../modals/SuccessAlert";
 import {
   getTasksRequest,
   addTaskRequest,
@@ -12,6 +13,10 @@ import {
 const KanbanBoard = () => {
   const [tasks, setTasks] = useState([]);
   const [students, setStudents] = useState([]);
+
+
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const loadData = async () => {
     try {
@@ -38,8 +43,13 @@ const KanbanBoard = () => {
     try {
       await addTaskRequest(form);
       await loadData();
+      setAlertMessage("Tarea creada correctamente");
+      setAlertOpen(true);
+
     } catch (error) {
       console.error("Error creando tarea", error);
+      setAlertMessage("Error al crear la tarea");
+      setAlertOpen(true);
     }
   };
 
@@ -65,8 +75,12 @@ const KanbanBoard = () => {
     try {
       await updateTaskRequest(id, formData);
       await loadData();
+      setAlertMessage("Tarea actualizada correctamente");
+      setAlertOpen(true);
     } catch (error) {
       console.error("Error actualizando tarea", error);
+      setAlertMessage("Error al actualizar la tarea");
+      setAlertOpen(true);
     }
   };
 
@@ -74,8 +88,12 @@ const KanbanBoard = () => {
     try {
       await deleteTaskRequest(id);
       await loadData();
+      setAlertMessage("Tarea eliminada correctamente");
+      setAlertOpen(true);
     } catch (error) {
       console.error("Error eliminando tarea", error);
+      setAlertMessage("Error al eliminar la tarea");
+      setAlertOpen(true);
     }
   };
 
@@ -112,6 +130,12 @@ const KanbanBoard = () => {
         onMoveTask={handleMoveTask}
         onUpdateTask={handleUpdateTask}
         onDeleteTask={handleDeleteTask}
+      />
+
+      <SuccessAlert
+        isOpen={alertOpen}
+        message={alertMessage}
+        onClose={() => setAlertOpen(false)}
       />
     </div>
   );

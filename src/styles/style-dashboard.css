@@ -264,4 +264,121 @@
   .config-container {
     padding: 20px;
   }
+}.ms-container {
+  position: relative;
+  width: 100%;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+.ms-search {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #000000;
+  outline: none;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 14px;
+}
+
+.ms-search:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 🔥 SOLUCIÓN AL MODAL GIGANTE: Scroll Horizontal */
+.ms-selected {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding-bottom: 5px; /* Espacio para que no se corte la sombra si hubiera */
+  scrollbar-width: none; /* Firefox */
+}
+
+.ms-selected::-webkit-scrollbar {
+  display: none;
+}
+
+.ms-chip {
+  flex: 0 0 auto; /* Evita que los chips se encojan */
+  background: #f3f4f6;
+  color: #000000;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ms-chip span {
+  cursor: pointer;
+  color: #6b7280;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.ms-chip span:hover {
+  color: #ff0015;
+}
+
+.ms-dropdown {
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+  border: 1px solid #000000;
+  border-radius: 10px;
+  background: #ffffff;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ms-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.ms-option:hover {
+  background: #f9fafb;
+}
+
+.ms-option::after {
+  content: 'X';
+  color: #ff0015;
+  font-weight: 600;
+  font-size: 12px;
+  opacity: 0.3;
+}
+
+.ms-option.selected {
+  background: #ebebeb;
+  font-weight: 600;
+}
+
+.ms-option.selected::after {
+  content: '✓';
+  color: #085a05;
+  font-size: 16px;
+  opacity: 1;
+}
+
+.ms-empty {
+  padding: 12px;
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+}
+

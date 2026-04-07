@@ -22,7 +22,6 @@ const AdvisorCardsContainer = () => {
     const loadAdvisors = async () => {
       try {
         const res = await getAllBoardsRequest();
-        console.log("Respuesta de getAllBoardsRequest:", res);
         setAdvisors(res);
       } catch (error) {
         console.error("Error cargando asesores", error);
