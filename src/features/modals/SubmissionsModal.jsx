@@ -14,7 +14,6 @@ const SubmissionsModal = ({ task, onClose }) => {
   const [feedbacks, setFeedbacks] = useState({});
   const [saving, setSaving] = useState({});
 
-  // 🔥 helper para obtener ID correctamente
   const getStudentId = (student) => {
     if (typeof student === "number") return student;
 
@@ -63,7 +62,7 @@ const SubmissionsModal = ({ task, onClose }) => {
       const results = await Promise.all(requests);
 
       const filtered = results
-        .filter(Boolean) // 🔥 elimina null
+        .filter(Boolean) 
         .filter(s => s.evidences && s.evidences.length > 0);
 
       setStudentsWithEvidence(filtered);
@@ -81,7 +80,6 @@ const SubmissionsModal = ({ task, onClose }) => {
     }
   }, [task]);
 
-  // 🔹 Preview archivo
   const previewFile = (file) => {
     try {
       const byteCharacters = atob(file.file);
@@ -104,7 +102,6 @@ const SubmissionsModal = ({ task, onClose }) => {
     }
   };
 
-  // 🔹 Guardar calificación
   const handleGrade = async (studentId) => {
     try {
       setSaving(prev => ({ ...prev, [studentId]: true }));
@@ -155,7 +152,6 @@ const SubmissionsModal = ({ task, onClose }) => {
 
               <h4>{student.name}</h4>
 
-              {/* 📁 Evidencias */}
               {student.evidences.map(ev => (
                 <div key={ev.id}>
                   <button onClick={() => previewFile(ev)}>
@@ -164,7 +160,6 @@ const SubmissionsModal = ({ task, onClose }) => {
                 </div>
               ))}
 
-              {/* 🧠 Calificación */}
               <div style={{ marginTop: "10px" }}>
 
                 <input
