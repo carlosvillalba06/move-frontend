@@ -59,3 +59,13 @@ export const getTasksByAdviserRequest = async (adviserId) => {
     method: "GET"
   });
 };
+
+// Obtener reporte de asesor por rango de fechas
+export const getAdviserReportByAdminRequest = async (adviserId, startDate, endDate) => {
+  return await apiFetch(
+    `${API_URL}/adviser/${adviserId}/report?startDate=${startDate}&endDate=${endDate}`,
+    {
+      method: "GET"
+    }
+  );
+};

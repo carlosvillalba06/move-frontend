@@ -12,18 +12,18 @@ const KanbanColumn = ({
   onCreateTask,
   onMoveTask,
   onUpdateTask,
-  onDeleteTask
+  onDeleteTask,
+  isReadOnly = false
 }) => {
   const [openModal, setOpenModal] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedTaskSubmissions, setSelectedTaskSubmissions] = useState(null);
 
-  const columnTasks = tasks.filter(
-    task => task.statusKanban === status
-  );
+  const columnTasks = tasks.filter(task => task.statusKanban === status);
 
   const handleSaveTask = async (formData) => {
+    if (isReadOnly) return;
     formData.append("statusKanban", status);
     await onCreateTask(formData);
     setOpenModal(false);
@@ -33,45 +33,27 @@ const KanbanColumn = ({
     <div className="kanban-column">
       <h3>{title}</h3>
 
-      <button className="add-task" onClick={() => setOpenModal(true)}>
-        + Agregar tarea
-      </button>
+      {!isReadOnly && (
+        <button className="add-task" onClick={() => setOpenModal(true)}>
+          + Agregar tarea
+        </button>
+      )}
 
       <div
         className={`task-list ${isOver ? "drag-over" : ""}`}
         onDragOver={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.dataTransfer.dropEffect = "move";
-          setIsOver(true);
-        }}
-        onDragEnter={(e) => {
+          if (isReadOnly) return;
           e.preventDefault();
           setIsOver(true);
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault();
-          setIsOver(false);
         }}
         onDrop={(e) => {
+          if (isReadOnly) return;
+
           e.preventDefault();
-          e.stopPropagation();
-
-          const rawId = e.dataTransfer.getData("text/plain");
-
-          if (!rawId) {
-            setIsOver(false);
-            return;
+          const taskId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+          if (!isNaN(taskId)) {
+            onMoveTask(taskId, status);
           }
-
-          const taskId = parseInt(rawId, 10);
-
-          if (isNaN(taskId)) {
-            setIsOver(false);
-            return;
-          }
-
-          onMoveTask(taskId, status);
           setIsOver(false);
         }}
         style={{ minHeight: "100px" }}
@@ -80,6 +62,7 @@ const KanbanColumn = ({
           <TaskCard
             key={task.id}
             task={task}
+            isReadOnly={isReadOnly}
             onOpenDetails={setSelectedTask}
             onDelete={onDeleteTask}
             onOpenSubmissions={setSelectedTaskSubmissions}
@@ -87,7 +70,7 @@ const KanbanColumn = ({
         ))}
       </div>
 
-      {openModal && (
+      {!isReadOnly && openModal && (
         <AddTask
           onClose={() => setOpenModal(false)}
           advisors={advisors}
@@ -99,6 +82,7 @@ const KanbanColumn = ({
         <TaskDetailsModal
           task={selectedTask}
           advisors={advisors}
+          isReadOnly={isReadOnly}
           onClose={() => setSelectedTask(null)}
           onSave={onUpdateTask}
         />

@@ -14,6 +14,7 @@ import {
 } from "../../../services/adviserService";
 
 import { getTasksByAdviserRequest } from "../../../services/adminService";
+import { statusAdapter } from "../../../services/utils/statusAdapter";
 
 const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
   const [startDate, setStartDate] = useState("");
@@ -35,19 +36,19 @@ const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
           <label style={{ fontWeight: "bold" }}>Desde:
-            <input 
-              type="date" 
-              value={startDate} 
+            <input
+              type="date"
+              value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }} 
+              style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}
             />
           </label>
           <label style={{ fontWeight: "bold" }}>Hasta:
-            <input 
-              type="date" 
-              value={endDate} 
+            <input
+              type="date"
+              value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }} 
+              style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}
             />
           </label>
         </div>
@@ -80,8 +81,16 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
         studentsRes = await getAllStudentsRequest();
       }
 
-      setTasks(Array.isArray(tasksRes?.data || tasksRes) ? tasksRes?.data || tasksRes : []);
+      const rawTasks = tasksRes?.data || tasksRes || [];
+
+      const normalizedTasks = rawTasks.map(t => ({
+        ...t,
+        statusKanban: statusAdapter.toFrontend(t.statusKanban)
+      }));
+
+      setTasks(Array.isArray(normalizedTasks) ? normalizedTasks : []);
       setStudents(Array.isArray(studentsRes?.data || studentsRes) ? studentsRes?.data || studentsRes : []);
+
     } catch (error) {
       setAlertMessage("Error cargando datos");
       setAlertOpen(true);
@@ -106,9 +115,20 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
 
   const handleMoveTask = async (taskId, newStatus) => {
     try {
-      await updateTaskStatusRequest(taskId, newStatus);
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, statusKanban: newStatus } : t));
-    } catch (error) {}
+      const backendStatus = statusAdapter.toBackend(newStatus);
+      await updateTaskStatusRequest(taskId, backendStatus);
+
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === taskId
+            ? { ...t, statusKanban: newStatus }
+            : t
+        )
+      );
+    } catch (error) {
+      setAlertMessage("Error al mover tarea");
+      setAlertOpen(true);
+    }
   };
 
   const handleUpdateTask = async (id, formData) => {
@@ -117,19 +137,22 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
       await loadData();
       setAlertMessage("Tarea actualizada correctamente");
       setAlertOpen(true);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleDeleteTask = async (id) => {
-    try {
-      await deleteTaskRequest(id);
-      await loadData();
-      setAlertMessage("Tarea eliminada correctamente");
-      setAlertOpen(true);
-    } catch (error) {}
+    setAlertMessage("Los asesores no tienen permisos para eliminar tareas");
+    setAlertOpen(true);
+    return; 
   };
 
-  // SOLO PDF DEL DTO
+  const translateStatus = (status) => {
+    if (status === "TODO") return "Por hacer";
+    if (status === "IN_PROGRESS") return "En proceso";
+    if (status === "DONE") return "Completado";
+    return status;
+  };
+
   const handleGenerateProjectReport = async (startDate, endDate) => {
     try {
       setIsReportModalOpen(false);
@@ -139,56 +162,73 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
         return;
       }
 
-      const res = await getAdviserReportRequest(startDate, endDate);
+      const res = await getAdviserReportRequest(startDate, endDate, adviserId);
       const report = res?.data || res;
+      
       const { totalStudents, totalTasks, tasksToDo, tasksDoing, tasksDone, averageGrade, taskDetailReportDto } = report;
+
+      const formatDate = (date) => {
+        if (!date) return "-";
+        const d = new Date(date);
+        return d.toLocaleDateString();
+      };
 
       const reportHTML = `
         <html>
           <head>
             <title>Reporte de Proyecto</title>
             <style>
-              body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
-              h1 { text-align: center; }
-              h2 { margin-top: 20px; }
-              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-              th, td { border: 1px solid #333; padding: 6px; text-align: left; }
+              body { font-family: Arial, sans-serif; padding: 30px; color: #333; }
+              h1 { text-align: center; margin-bottom: 10px; }
+              h2 { margin-top: 30px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+              .summary p { margin: 5px 0; font-size: 14px; }
+              .summary b { display: inline-block; width: 180px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
               th { background-color: #000; color: #fff; }
+              tr:nth-child(even) { background-color: #f5f5f5; }
+              .no-data { margin-top: 10px; font-style: italic; color: #666; }
+              .footer { margin-top: 40px; text-align: right; font-size: 12px; color: #888; }
             </style>
           </head>
           <body>
             <h1>Reporte de Proyecto</h1>
-            <h2>Resumen</h2>
-            <p><strong>Periodo:</strong> ${startDate} - ${endDate}</p>
-            <p><strong>Total de estudiantes:</strong> ${totalStudents}</p>
-            <p><strong>Total de tareas:</strong> ${totalTasks}</p>
-            <p><strong>Tareas por hacer:</strong> ${tasksToDo}</p>
-            <p><strong>Tareas en progreso:</strong> ${tasksDoing}</p>
-            <p><strong>Tareas completadas:</strong> ${tasksDone}</p>
-            <p><strong>Promedio de calificaciones:</strong> ${averageGrade ?? "N/A"}</p>
-
-            <h2>Detalle de Tareas</h2>
-            ${taskDetailReportDto?.length
-              ? `<table>
-                  <thead>
+            <div class="summary">
+              <h2>Resumen</h2>
+              <p><b>Periodo:</b> ${startDate} - ${endDate}</p>
+              <p><b>Total estudiantes:</b> ${totalStudents ?? 0}</p>
+              <p><b>Total tareas:</b> ${totalTasks ?? 0}</p>
+              <p><b>Por hacer:</b> ${tasksToDo ?? 0}</p>
+              <p><b>En proceso:</b> ${tasksDoing ?? 0}</p>
+              <p><b>Completadas:</b> ${tasksDone ?? 0}</p>
+              <p><b>Promedio:</b> ${averageGrade ?? "N/A"}</p>
+            </div>
+            <h2>Detalle de tareas</h2>
+            ${taskDetailReportDto?.length ? `
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarea</th>
+                    <th>Estado</th>
+                    <th>Estudiante</th>
+                    <th>Calificación</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${taskDetailReportDto.map(t => `
                     <tr>
-                      <th>Tarea</th><th>Estado</th><th>Responsable</th><th>Calificación</th><th>Comentarios</th>
+                      <td>${t.taskName || "-"}</td>
+                      <td>${translateStatus(t.status) || "-"}</td>
+                      <td>${t.studentName || "-"}</td>
+                      <td>${t.grade ?? "-"}</td>
+                      <td>${formatDate(t.date)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    ${taskDetailReportDto.map(t => `
-                      <tr>
-                        <td>${t.name || "Tarea"}</td>
-                        <td>${t.status}</td>
-                        <td>${t.studentName || "N/A"}</td>
-                        <td>${t.grade ?? "-"}</td>
-                        <td>${t.feedback ?? "-"}</td>
-                      </tr>
-                    `).join("")}
-                  </tbody>
-                </table>`
-              : "<p>No hay tareas registradas</p>"
-            }
+                  `).join("")}
+                </tbody>
+              </table>
+            ` : `<p class="no-data">No hay datos en este periodo</p>`}
+            <div class="footer">Generado automáticamente</div>
           </body>
         </html>
       `;
@@ -197,8 +237,10 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
       win.document.write(reportHTML);
       win.document.close();
       win.focus();
-      win.print();
-      win.close();
+      setTimeout(() => {
+        win.print();
+        win.close();
+      }, 500);
     } catch (error) {
       setAlertMessage("Error al generar el reporte");
       setAlertOpen(true);
@@ -207,7 +249,7 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
 
   return (
     <main style={{ padding: "20px" }}>
-      <header style={{ textAlign: "center", marginBottom: "20px" }}>
+      <header style={{ textAlign: "right", marginBottom: "30px", marginRight: "20px" }}>
         <Button variant="primary" onClick={() => setIsReportModalOpen(true)}>
           Generar Reporte por Proyecto
         </Button>

@@ -31,10 +31,10 @@ const StudentCardsToggleContainer = () => {
 
   const filteredStudents = Array.isArray(students)
     ? students.filter(s =>
-        (s.firstName + " " + s.lastName + " " + s.email)
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      )
+      (s.firstName + " " + s.lastName + " " + s.email)
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    )
     : [];
 
   const loadStudents = async () => {
@@ -44,13 +44,13 @@ const StudentCardsToggleContainer = () => {
 
       const normalized = Array.isArray(data)
         ? data.map(s => ({
-            id: s.studentID,
-            firstName: s.firstName,
-            lastName: s.lastName,
-            email: s.email,
-            status: s.statusAdviserStudent,
-            logo: s.logo
-          }))
+          id: s.studentID,
+          firstName: s.firstName,
+          lastName: s.lastName,
+          email: s.email,
+          status: s.statusAdviserStudent,
+          logo: s.logo
+        }))
         : [];
 
       setStudents(normalized);
@@ -93,68 +93,98 @@ const StudentCardsToggleContainer = () => {
 
   const handleAddStudent = () => setIsSearchModalOpen(true);
 
+  const translateStatus = (status) => {
+  if (!status) return "-";
+
+  const clean = status.split(",")[0];
+
+  if (clean === "TODO" || clean === "ToDo") return "Por hacer";
+  if (clean === "IN_PROGRESS") return "En proceso";
+  if (clean === "DONE") return "Completado";
+
+  return clean;
+};
+
   const handleGenerateReport = async (studentId, student) => {
     try {
-      const startDate =  new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0];
-      const endDate =  new Date().toISOString().split("T")[0];
+      const startDate = new Date(new Date().getFullYear(), 0, 1).toISOString().split("T")[0];
+      const endDate = new Date().toISOString().split("T")[0];
 
       const res = await getStudentExpedienteRequest(studentId, startDate, endDate);
       const data = res?.data || res;
+      console.log("Datos del expediente:", data);
 
       const reportHTML = `
-        <html>
-          <head>
-            <title>Reporte de ${student.firstName}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
-              h1 { text-align: center; color: #16a085; }
-              h2 { color: #34495e; margin-top: 20px; }
-              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #16a085; color: white; }
-              ul { margin-top: 5px; }
-              li { margin-bottom: 4px; }
-              .logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
-              .center { text-align: center; }
-            </style>
-          </head>
-          <body>
-            <div class="center">
-              ${student.logo && student.logo !== "SIN LOGO" ? `<img src="data:image/png;base64,${student.logo}" class="logo" />` : ''}
-              <h1>Reporte de Estudiante</h1>
-              <p><strong>Nombre:</strong> ${data.fullName}</p>
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p><strong>Activo:</strong> ${data.isActive ? "Sí" : "No"}</p>
-              <p><strong>Periodo:</strong> ${startDate} - ${endDate}</p>
-            </div>
+<html>
+  <head>
+    <title>Reporte de ${data.fullName}</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
+      h1 { text-align: center; color: #000; }
+      h2 { color: #333; margin-top: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+      th { background-color: #000; color: #fff; }
+      tr:nth-child(even) { background-color: #f2f2f2; }
+      .logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
+      .center { text-align: center; }
+    </style>
+  </head>
+  <body>
 
-            <h2>Métricas</h2>
-            <p><strong>Total de tareas:</strong> ${data.totalTasks}</p>
-            <p><strong>Tareas por hacer:</strong> ${data.tasksToDo}</p>
-            <p><strong>Tareas en progreso:</strong> ${data.tasksDoing}</p>
-            <p><strong>Tareas completadas:</strong> ${data.tasksDone}</p>
-            <p><strong>Promedio de calificaciones:</strong> ${data.averageGrade ?? "-"}</p>
-            <p><strong>Entregas a tiempo:</strong> ${data.onTimePercentage != null ? data.onTimePercentage + "%" : "-"}</p>
+    <div class="center">
+      ${student.logo && student.logo !== "SIN LOGO"
+          ? `<img src="data:image/png;base64,${student.logo}" class="logo" />`
+          : ""
+        }
 
-            <h2>Historial de Tareas</h2>
-            ${
-              data.taskHistory && data.taskHistory.length
-                ? `<table>
-                    <thead><tr><th>Tarea</th><th>Estado</th><th>Calificación</th><th>Comentarios</th></tr></thead>
-                    <tbody>
-                      ${data.taskHistory.map(t => `<tr>
-                        <td>${t.name}</td>
-                        <td>${t.status}</td>
-                        <td>${t.grade ?? "-"}</td>
-                        <td>${t.feedback ?? "-"}</td>
-                      </tr>`).join("")}
-                    </tbody>
-                  </table>`
-                : "<p>No hay tareas registradas</p>"
-            }
-          </body>
-        </html>
-      `;
+      <h1>Reporte de Estudiante</h1>
+      <p><strong>Nombre:</strong> ${data.fullName}</p>
+      <p><strong>Email:</strong> ${data.email}</p>
+      <p><strong>Activo:</strong> ${data.active ? "Sí" : "No"}</p>
+      <p><strong>Periodo:</strong> ${startDate} - ${endDate}</p>
+    </div>
+
+    <h2>Métricas</h2>
+    <p><strong>Total de tareas:</strong> ${data.totalTasks}</p>
+    <p><strong>Tareas por hacer:</strong> ${data.tasksToDo}</p>
+    <p><strong>Tareas en proceso:</strong> ${data.tasksDoing}</p>
+    <p><strong>Tareas completadas:</strong> ${data.tasksDone}</p>
+    <p><strong>Promedio:</strong> ${data.averageGrade ?? "-"}</p>
+    <p><strong>Entregas a tiempo:</strong> ${data.onTimePercentage != null ? data.onTimePercentage + "%" : "-"
+        }</p>
+
+    <h2>Historial de Tareas</h2>
+
+    ${data.taskHistory && data.taskHistory.length
+          ? `
+        <table>
+          <thead>
+            <tr>
+              <th>Tarea</th>
+              <th>Estado</th>
+              <th>Calificación</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.taskHistory.map(t => `
+              <tr>
+                <td>${t.taskName || "-"}</td>
+                <td>${translateStatus(t.status)}</td>
+                <td>${t.grade ?? "-"}</td>
+                <td>${t.date || "-"}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+        `
+          : "<p>No hay tareas registradas</p>"
+        }
+
+  </body>
+</html>
+`;
 
       const printWindow = window.open('', '_blank');
       printWindow.document.write(reportHTML);
@@ -179,7 +209,7 @@ const StudentCardsToggleContainer = () => {
             key={student.id}
             student={student}
             onToggle={handleToggleStatus}
-            onOpen={setSelectedStudent} 
+            onOpen={setSelectedStudent}
           />
         ))}
       </div>

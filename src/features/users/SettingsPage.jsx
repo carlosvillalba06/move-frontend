@@ -21,9 +21,16 @@ import {
   updateAdviserInformationRequest
 } from "../../services/adviserService";
 
+import {
+  resetPasswordRequest,
+  verifyCodeRequest,
+  setPasswordRequest
+} from "../../services/authService";
+
 const Configuracion = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
@@ -37,28 +44,30 @@ const Configuracion = () => {
   const [editingName, setEditingName] = useState(false);
   const [editingPassword, setEditingPassword] = useState(false);
 
+  const [step, setStep] = useState(1); // 1: enviar código, 2: verificar, 3: nueva contraseña
+  const [code, setCode] = useState("");
+
   const [nameForm, setNameForm] = useState({
     firstName: "",
     lastName: ""
   });
 
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
     newPassword: ""
   });
 
   const service = useMemo(() => {
     return role === "ADMIN"
       ? {
-        getInfo: getAdminInformationRequest,
-        upload: uploadLogoRequest,
-        update: updateAdminInformationRequest
-      }
+          getInfo: getAdminInformationRequest,
+          upload: uploadLogoRequest,
+          update: updateAdminInformationRequest
+        }
       : {
-        getInfo: getAdviserInformationRequest,
-        upload: uploadLogoAdviserRequest,
-        update: updateAdviserInformationRequest
-      };
+          getInfo: getAdviserInformationRequest,
+          upload: uploadLogoAdviserRequest,
+          update: updateAdviserInformationRequest
+        };
   }, [role]);
 
   const handleLogout = () => {
@@ -91,36 +100,36 @@ const Configuracion = () => {
     if (role) fetchInfo();
   }, [role, service]);
 
- const handleImageChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  try {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewImage(reader.result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
 
-    await service.upload(file);
+      await service.upload(file);
 
-    const response = await service.getInfo();
-    const info = response?.data || response;
-    if (info?.logo) {
-     setPreviewImage(`data:image/png;base64,${info.logo}`);
+      const response = await service.getInfo();
+      const info = response?.data || response;
+
+      if (info?.logo) {
+        setPreviewImage(`data:image/png;base64,${info.logo}`);
       }
-    setAlertMessage("Imagen actualizada correctamente");
-    setAlertOpen(true);
-    setData(info);
 
-  } catch (error) {
-    console.error("Error subiendo imagen:", error);
-    setAlertMessage("Error al subir la imagen");
-    setAlertOpen(true);
-  }
+      setAlertMessage("Imagen actualizada correctamente");
+      setAlertOpen(true);
+      setData(info);
 
-  
-};
+    } catch (error) {
+      console.error("Error subiendo imagen:", error);
+      setAlertMessage("Error al subir la imagen");
+      setAlertOpen(true);
+    }
+  };
 
   const handleNameChange = (e) => {
     setNameForm({
@@ -132,14 +141,17 @@ const Configuracion = () => {
   const handleSaveName = async () => {
     try {
       await service.update(nameForm);
+
       setData((prev) => ({
         ...prev,
         firstName: nameForm.firstName,
         lastName: nameForm.lastName
       }));
+
       setEditingName(false);
       setAlertMessage("Nombre actualizado correctamente");
       setAlertOpen(true);
+
     } catch (error) {
       console.error("Error actualizando nombre", error);
     }
@@ -154,16 +166,38 @@ const Configuracion = () => {
 
   const handleSavePassword = async () => {
     try {
-      setEditingPassword(false);
-      setPasswordForm({
-        currentPassword: "",
-        newPassword: ""
-      });
+      const email = user?.email;
 
-      setAlertMessage("Contraseña actualizada correctamente");
-      setAlertOpen(true);
+      if (step === 1) {
+        await resetPasswordRequest(email);
+        setAlertMessage("Código enviado al correo");
+        setAlertOpen(true);
+        setStep(2);
+      }
+
+      else if (step === 2) {
+        await verifyCodeRequest(email, code);
+        setAlertMessage("Código verificado");
+        setAlertOpen(true);
+        setStep(3);
+      }
+
+      else if (step === 3) {
+        await setPasswordRequest(passwordForm.newPassword);
+
+        setAlertMessage("Contraseña actualizada correctamente");
+        setAlertOpen(true);
+
+        setEditingPassword(false);
+        setStep(1);
+        setPasswordForm({ newPassword: "" });
+        setCode("");
+      }
+
     } catch (error) {
-      console.error("Error cambiando contraseña", error);
+      console.error(error);
+      setAlertMessage("Error en el proceso");
+      setAlertOpen(true);
     }
   };
 
@@ -172,21 +206,25 @@ const Configuracion = () => {
       <div className="config-container">
         <h1>Configuración {role === "ADMIN" ? "Admin" : "Asesor"}</h1>
 
+        {/* IMAGEN */}
         <section className="config-section">
           <h2>Imagen de perfil</h2>
           <div className="profile-edit">
             <img src={previewImage} alt="Perfil" className="profile-img" />
+
             <input
               type="file"
               ref={fileInputRef}
               hidden
               accept="image/*"
               onChange={handleImageChange}
-              variant="modal"
             />
 
-
-            <Button variant="secondary" size="md" onClick={() => fileInputRef.current.click()}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => fileInputRef.current.click()}
+            >
               Cambiar imagen
             </Button>
           </div>
@@ -194,117 +232,91 @@ const Configuracion = () => {
 
         <hr />
 
+        {/* NOMBRE */}
         <section className="config-section">
           <div className="section-header">
             <h2>Nombre</h2>
-            {!editingName ? (
 
-              <Button variant="secondary" size="md" onClick={() => setEditingName(true)}>
-                Editar
-              </Button>
+            {!editingName ? (
+              <Button onClick={() => setEditingName(true)}>Editar</Button>
             ) : (
-              <Button variant="secondary" size="md" onClick={handleSaveName}>
-                Guardar Cambios
-              </Button>
+              <Button onClick={handleSaveName}>Guardar Cambios</Button>
             )}
           </div>
 
-          <div className="input-field">
-            <label>Nombre(s)</label>
-            <Input
-              type="text"
-              name="firstName"
-              value={nameForm.firstName}
-              onChange={handleNameChange}
-              disabled={!editingName}
-              variant="modal"
-              size="md" />
+          <Input
+            name="firstName"
+            value={nameForm.firstName}
+            onChange={handleNameChange}
+            disabled={!editingName}
+          />
 
-
-          </div>
-
-          <div className="input-field">
-            <label>Apellidos</label>
-            <Input
-              name="lastName"
-              value={nameForm.lastName}
-              onChange={handleNameChange}
-              disabled={!editingName}
-              variant="modal"
-              size="md" />
-
-          </div>
+          <Input
+            name="lastName"
+            value={nameForm.lastName}
+            onChange={handleNameChange}
+            disabled={!editingName}
+          />
         </section>
 
         <hr />
 
+        {/* SEGURIDAD */}
         <section className="config-section">
           <div className="section-header">
             <h2>Seguridad</h2>
+
             {!editingPassword ? (
-              <Button variant="secondary" size="md" onClick={() => setEditingPassword(true)}>
+              <Button onClick={() => setEditingPassword(true)}>
                 Cambiar contraseña
               </Button>
             ) : (
-              <Button variant="secondary" size="md" onClick={handleSavePassword}>
-                Guardar Contraseña
+              <Button onClick={handleSavePassword}>
+                {step === 1 && "Enviar código"}
+                {step === 2 && "Verificar código"}
+                {step === 3 && "Guardar contraseña"}
               </Button>
-
             )}
           </div>
 
-          <div className="input-field">
-            <label>Correo</label>
-            <Input type="email" value={user?.email || ""} readOnly variant="modal" size="md" />
-          </div>
+          <Input type="email" value={user?.email || ""} readOnly />
 
           {editingPassword && (
             <>
-              <div className="input-field">
-                <label>Contraseña actual</label>
+              {step === 2 && (
                 <Input
-                  type="password"
-                  name="currentPassword"
-                  value={passwordForm.currentPassword}
-                  onChange={handlePasswordChange}
-                  variant="modal"
-                  size="md"
+                  placeholder="Código de verificación"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
                 />
+              )}
 
-              </div>
-
-              <div className="input-field">
-                <label>Nueva contraseña</label>
+              {step === 3 && (
                 <Input
                   type="password"
                   name="newPassword"
+                  placeholder="Nueva contraseña"
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
-                  variant="modal"
-                  size="md"
                 />
-
-              </div>
+              )}
             </>
           )}
         </section>
 
         <div className="logout-wrapper">
-          <Button variant="primary" size="lg" onClick={handleLogout}>
+          <Button onClick={handleLogout}>
             Cerrar sesión
           </Button>
-
         </div>
       </div>
 
       <SuccessAlert
         isOpen={alertOpen}
         message={alertMessage}
-        onClose={() => setAlertOpen(false)} />
-
-
+        onClose={() => setAlertOpen(false)}
+      />
     </DashboardLayout>
-
   );
 };
 

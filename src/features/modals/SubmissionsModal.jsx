@@ -5,6 +5,8 @@ import {
   gradeStudentTaskRequest
 } from "../../services/adviserService";
 
+import SuccessAlert from "../modals/SuccessAlert";
+
 const SubmissionsModal = ({ task, onClose }) => {
 
   const [studentsWithEvidence, setStudentsWithEvidence] = useState([]);
@@ -13,6 +15,11 @@ const SubmissionsModal = ({ task, onClose }) => {
   const [grades, setGrades] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
   const [saving, setSaving] = useState({});
+
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    message: ""
+  });
 
   const getStudentId = (student) => {
     if (typeof student === "number") return student;
@@ -25,47 +32,43 @@ const SubmissionsModal = ({ task, onClose }) => {
     );
   };
 
+  const getStudentName = (student, id) => {
+    if (typeof student === "object") {
+      return student.fullName || student.name || `Estudiante ${id}`;
+    }
+    return `Estudiante ${id}`;
+  };
+
   const fetchStudentsWithEvidence = async () => {
     if (!task?.students?.length) return;
 
     setLoading(true);
 
     try {
-      const requests = task.students.map(async (student) => {
+      const results = [];
 
+      for (const student of task.students) {
         const studentId = getStudentId(student);
-
-        if (!studentId) {
-          console.warn("⚠️ Estudiante sin ID:", student);
-          return null;
-        }
+        if (!studentId) continue;
 
         try {
           const res = await getStudentEvidencesRequest(task.id, studentId);
           const data = res?.data || res || [];
 
-          return {
-            studentId,
-            name:
-              typeof student === "object"
-                ? (student.name || student.fullName || `Estudiante ${studentId}`)
-                : `Estudiante ${studentId}`,
-            evidences: data
-          };
+          if (data.length > 0) {
+            results.push({
+              studentId,
+              name: getStudentName(student, studentId),
+              evidences: data
+            });
+          }
 
         } catch (error) {
           console.error("Error en estudiante:", studentId);
-          return null;
         }
-      });
+      }
 
-      const results = await Promise.all(requests);
-
-      const filtered = results
-        .filter(Boolean) 
-        .filter(s => s.evidences && s.evidences.length > 0);
-
-      setStudentsWithEvidence(filtered);
+      setStudentsWithEvidence(results);
 
     } catch (error) {
       console.error("Error cargando evidencias:", error);
@@ -77,6 +80,8 @@ const SubmissionsModal = ({ task, onClose }) => {
   useEffect(() => {
     if (task) {
       fetchStudentsWithEvidence();
+      setGrades({});
+      setFeedbacks({});
     }
   }, [task]);
 
@@ -97,27 +102,45 @@ const SubmissionsModal = ({ task, onClose }) => {
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank");
 
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
     } catch (error) {
       console.error("Error al abrir archivo:", error);
     }
   };
 
   const handleGrade = async (studentId) => {
+    const grade = Number(grades[studentId]);
+
+    if (isNaN(grade) || grade < 0 || grade > 10) {
+      setAlertConfig({
+        isOpen: true,
+        message: "La calificación debe ser entre 0 y 10"
+      });
+      return;
+    }
+
     try {
       setSaving(prev => ({ ...prev, [studentId]: true }));
 
       await gradeStudentTaskRequest(
         task.id,
         studentId,
-        Number(grades[studentId]),
+        grade,
         feedbacks[studentId] || ""
       );
 
-      alert("Calificación guardada");
+      setAlertConfig({
+        isOpen: true,
+        message: "Calificación guardada correctamente"
+      });
 
     } catch (error) {
-      console.error("Error calificando:", error);
-      alert("Error al guardar");
+      console.error(error);
+      setAlertConfig({
+        isOpen: true,
+        message: "Error al guardar la calificación"
+      });
     } finally {
       setSaving(prev => ({ ...prev, [studentId]: false }));
     }
@@ -131,12 +154,14 @@ const SubmissionsModal = ({ task, onClose }) => {
 
         <button className="close-x" onClick={onClose}>X</button>
 
-        <h3>Entregables - {task.name}</h3>
+        <h3 style={{ marginBottom: "15px" }}>
+          Entregables - {task.name}
+        </h3>
 
-        {loading && <p>Cargando...</p>}
+        {loading && <p style={{ textAlign: "center" }}>Cargando...</p>}
 
         {!loading && studentsWithEvidence.length === 0 && (
-          <p>No hay entregas aún</p>
+          <p style={{ textAlign: "center" }}>No hay entregas aún</p>
         )}
 
         {!loading && studentsWithEvidence.map(student => {
@@ -144,27 +169,42 @@ const SubmissionsModal = ({ task, onClose }) => {
 
           return (
             <div key={studentId} style={{
-              border: "1px solid #ddd",
-              padding: "10px",
-              marginBottom: "10px",
-              borderRadius: "8px"
+              border: "1px solid #ccc",
+              padding: "15px",
+              marginBottom: "15px",
+              borderRadius: "10px",
+              background: "#f9f9f9"
             }}>
 
-              <h4>{student.name}</h4>
+              <h4 style={{ marginBottom: "10px" }}>{student.name}</h4>
 
-              {student.evidences.map(ev => (
-                <div key={ev.id}>
-                  <button onClick={() => previewFile(ev)}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                {student.evidences.map(ev => (
+                  <button
+                    key={ev.id}
+                    onClick={() => previewFile(ev)}
+                    style={{
+                      background: "#000",
+                      color: "#fff",
+                      border: "none",
+                      padding: "6px",
+                      borderRadius: "5px",
+                      cursor: "pointer"
+                    }}
+                  >
                     {ev.fileName || "Ver archivo"}
                   </button>
-                </div>
-              ))}
+                ))}
+              </div>
 
-              <div style={{ marginTop: "10px" }}>
+              <div style={{ marginTop: "15px" }}>
 
+                
                 <input
                   type="number"
-                  placeholder="Calificación"
+                  min="0"
+                  max="10"
+                  placeholder="Calificación (0-10)"
                   value={grades[studentId] || ""}
                   onChange={(e) =>
                     setGrades(prev => ({
@@ -172,7 +212,13 @@ const SubmissionsModal = ({ task, onClose }) => {
                       [studentId]: e.target.value
                     }))
                   }
-                  style={{ marginRight: "5px" }}
+                  style={{
+                    width: "100%",
+                    padding: "6px",
+                    marginBottom: "5px",
+                    borderRadius: "5px",
+                    border: "1px solid #ccc"
+                  }}
                 />
 
                 <textarea
@@ -184,24 +230,43 @@ const SubmissionsModal = ({ task, onClose }) => {
                       [studentId]: e.target.value
                     }))
                   }
-                  style={{ display: "block", marginTop: "5px", width: "100%" }}
+                  style={{
+                    width: "100%",
+                    padding: "6px",
+                    borderRadius: "5px",
+                    border: "1px solid #ccc"
+                  }}
                 />
 
                 <button
                   onClick={() => handleGrade(studentId)}
-                  disabled={saving[studentId]}
-                  style={{ marginTop: "5px" }}
+                  disabled={saving[studentId] || !grades[studentId]}
+                  style={{
+                    marginTop: "8px",
+                    width: "100%",
+                    padding: "8px",
+                    background: saving[studentId] ? "#888" : "#000",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer"
+                  }}
                 >
-                  {saving[studentId] ? "Guardando..." : "Guardar"}
+                  {saving[studentId] ? "Guardando..." : "Guardar calificación"}
                 </button>
 
               </div>
-
             </div>
           );
         })}
 
       </div>
+
+      <SuccessAlert
+        isOpen={alertConfig.isOpen}
+        message={alertConfig.message}
+        onClose={() => setAlertConfig({ isOpen: false, message: "" })}
+      />
     </div>
   );
 };

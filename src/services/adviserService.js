@@ -1,6 +1,7 @@
 const API_URL = "/adviser";
 
 import { apiFetch } from "./api";
+import { statusAdapter } from "../services/utils/statusAdapter";
 
 /* =========================
    STUDENTS
@@ -103,17 +104,13 @@ export const updateTaskRequest = async (id, data) => {
     body: data
   });
 };
-const statusMap = {
-  "TODO": "ToDo",
-  "IN_PROGRESS": "Doing",
-  "DONE": "Done"
-};
+
 
 export const updateTaskStatusRequest = async (id, status) => {
   return await apiFetch(`${API_URL}/task/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ 
-      status: statusMap[status] 
+      status: statusAdapter.toBackend(status)
     })
   });
 };
