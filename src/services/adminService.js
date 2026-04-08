@@ -52,3 +52,10 @@ export const updateAdminInformationRequest = async (adminData) => {
     body: JSON.stringify(adminData)
   });
 };
+
+
+export const getTasksByAdviserRequest = async (adviserId) => {
+  return await apiFetch(`${API_URL}/adviser/${adviserId}/tasks`, {
+    method: "GET"
+  });
+};

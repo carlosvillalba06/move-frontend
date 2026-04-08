@@ -1,10 +1,9 @@
 import React, { useRef, useState } from "react";
 import ConfirmAlert from "../../modals/ConfirmAlert";
 
-const TaskCard = ({ task, onOpenDetails, onDelete }) => {
+const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
 
   const isDragging = useRef(false);
-
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const taskId = task.id;
@@ -16,8 +15,12 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
 
   const handleConfirmDelete = () => {
     onDelete(taskId);
-
     setConfirmOpen(false);
+  };
+
+  const handleOpenSubmissions = (e) => {
+    e.stopPropagation();
+    onOpenSubmissions(task);
   };
 
   return (
@@ -26,10 +29,7 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
         className="task-card"
         draggable
         onDragStart={(e) => {
-          console.log("DRAG START:", taskId);
-
           isDragging.current = true;
-
           e.dataTransfer.setData("text/plain", String(taskId));
           e.dataTransfer.effectAllowed = "move";
         }}
@@ -51,6 +51,7 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
           position: "relative"
         }}
       >
+        {/* ❌ Eliminar */}
         <button
           className="delete-btn"
           onClick={handleDelete}
@@ -61,6 +62,27 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
 
         <h4>{task.name}</h4>
         <p>{task.notes || "Sin descripción"}</p>
+
+        {/* 📦 Entregables */}
+        <button
+          className="submissions-btn"
+          onClick={handleOpenSubmissions}
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            marginTop: "8px",
+            fontSize: "12px",
+            padding: "4px 8px",
+            borderRadius: "6px",
+            border: "none",
+            background: "#eee",
+            cursor: "pointer"
+          }}
+        >
+          Entregables
+          
+        </button>
+
+
       </div>
 
       <ConfirmAlert
@@ -69,7 +91,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete }) => {
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmOpen(false)}
       />
-
     </>
   );
 };

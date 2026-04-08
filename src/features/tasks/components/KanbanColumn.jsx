@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import TaskCard from "./TaskCard";
 import AddTask from "../../modals/AddTask";
 import TaskDetailsModal from "../../modals/TaskDetailsModal";
+import SubmissionsModal from "../../modals/SubmissionsModal";
 
 const KanbanColumn = ({
   title,
@@ -16,6 +17,7 @@ const KanbanColumn = ({
   const [openModal, setOpenModal] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedTaskSubmissions, setSelectedTaskSubmissions] = useState(null);
 
   const columnTasks = tasks.filter(
     task => task.statusKanban === status
@@ -37,34 +39,27 @@ const KanbanColumn = ({
 
       <div
         className={`task-list ${isOver ? "drag-over" : ""}`}
-
         onDragOver={(e) => {
-          console.log("DRAG OVER COLUMN");
           e.preventDefault();
-          e.stopPropagation(); // 🔥 IMPORTANTE
-          e.dataTransfer.dropEffect = "move"; // 🔥 CLAVE
+          e.stopPropagation();
+          e.dataTransfer.dropEffect = "move";
           setIsOver(true);
         }}
-
         onDragEnter={(e) => {
           e.preventDefault();
           setIsOver(true);
         }}
-
         onDragLeave={(e) => {
           e.preventDefault();
           setIsOver(false);
         }}
-
         onDrop={(e) => {
           e.preventDefault();
-          e.stopPropagation(); // 🔥 IMPORTANTE
+          e.stopPropagation();
 
           const rawId = e.dataTransfer.getData("text/plain");
-          console.log("DROP RAW:", rawId);
 
           if (!rawId) {
-            console.log("ID vacío");
             setIsOver(false);
             return;
           }
@@ -72,18 +67,13 @@ const KanbanColumn = ({
           const taskId = parseInt(rawId, 10);
 
           if (isNaN(taskId)) {
-            console.log("ID inválido");
             setIsOver(false);
             return;
           }
 
-          console.log("DROP OK:", taskId, "->", status);
-
           onMoveTask(taskId, status);
           setIsOver(false);
         }}
-
-        // 🔥 EXTRA: asegura área visible
         style={{ minHeight: "100px" }}
       >
         {columnTasks.map(task => (
@@ -92,6 +82,7 @@ const KanbanColumn = ({
             task={task}
             onOpenDetails={setSelectedTask}
             onDelete={onDeleteTask}
+            onOpenSubmissions={setSelectedTaskSubmissions}
           />
         ))}
       </div>
@@ -110,6 +101,13 @@ const KanbanColumn = ({
           advisors={advisors}
           onClose={() => setSelectedTask(null)}
           onSave={onUpdateTask}
+        />
+      )}
+
+      {selectedTaskSubmissions && (
+        <SubmissionsModal
+          task={selectedTaskSubmissions}
+          onClose={() => setSelectedTaskSubmissions(null)}
         />
       )}
     </div>

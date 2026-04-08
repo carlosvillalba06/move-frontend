@@ -117,3 +117,53 @@ export const updateTaskStatusRequest = async (id, status) => {
     })
   });
 };
+
+/* =========================
+   EVIDENCES
+========================= */
+
+export const getStudentEvidencesRequest = async (taskId, studentId) => {
+  return await apiFetch(
+    `${API_URL}/task/${taskId}/student/${studentId}/evidences`,
+    {
+      method: "GET"
+    }
+  );
+};
+
+export const gradeStudentTaskRequest = async (taskId, studentId, grade, feedback) => {
+  return await apiFetch(
+    `${API_URL}/task/${taskId}/student/${studentId}/grade`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        grade,
+        feedback
+      })
+    }
+  );
+};
+
+
+
+/* =========================
+   REPORTS
+========================= */
+
+export const getAdviserReportRequest = async (startDate, endDate) => {
+  return await apiFetch(
+    `${API_URL}/report?startDate=${startDate}&endDate=${endDate}`,
+    {
+      method: "GET"
+    }
+  );
+};
+
+export const getStudentExpedienteRequest = async (studentId, startDate, endDate) => {
+  return await apiFetch(
+    `${API_URL}/student/${studentId}/expediente?startDate=${startDate}&endDate=${endDate}`,
+    {
+      method: "GET"
+    }
+  );
+};

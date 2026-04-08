@@ -25,15 +25,16 @@ const AdvisorCardsToggleContainer = () => {
   const [confirmAction, setConfirmAction] = useState(null);
 
   const filteredAdvisors = advisors.filter(a =>
-    (a.firstName + " " + a.lastName + " " + a.email)
-      .toLowerCase()
+    `${a.firstName} ${a.lastName} ${a.email}`.toLowerCase()
       .includes(search.toLowerCase())
   );
 
   const loadAdvisors = async () => {
     try {
       const res = await getAllAdvisersRequest();
-      setAdvisors(res);
+      const data = res?.data || res; 
+      console.log("Advisors cargados:", data);
+      setAdvisors(data);
     } catch (error) {
       console.error("Error cargando asesores", error);
     }
@@ -110,9 +111,9 @@ const AdvisorCardsToggleContainer = () => {
       <br />
 
       <div className="grid">
-        {filteredAdvisors.map((advisor) => (
+        {filteredAdvisors.map((advisor, index) => (
           <AdvisorToggleCard
-            key={advisor.email}
+            key={advisor.id ?? `advisor-${index}`}
             advisor={advisor}
             onToggle={handleToggleStatus}
           />
