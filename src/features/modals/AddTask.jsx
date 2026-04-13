@@ -157,7 +157,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           </div>
 
           <div className="form-group">
-            <label>Status</label>
+            <label>Estado</label>
             <select
               name="statusKanban"
               value={form.statusKanban}

@@ -94,16 +94,16 @@ const StudentCardsToggleContainer = () => {
   const handleAddStudent = () => setIsSearchModalOpen(true);
 
   const translateStatus = (status) => {
-  if (!status) return "-";
+    if (!status) return "-";
 
-  const clean = status.split(",")[0];
+    const clean = status.split(",")[0];
 
-  if (clean === "TODO" || clean === "ToDo") return "Por hacer";
-  if (clean === "IN_PROGRESS") return "En proceso";
-  if (clean === "DONE") return "Completado";
+    if (clean === "TODO" || clean === "ToDo") return "Por hacer";
+    if (clean === "IN_PROGRESS") return "En proceso";
+    if (clean === "DONE") return "Completado";
 
-  return clean;
-};
+    return clean;
+  };
 
   const handleGenerateReport = async (studentId, student) => {
     try {
@@ -113,75 +113,200 @@ const StudentCardsToggleContainer = () => {
       const res = await getStudentExpedienteRequest(studentId, startDate, endDate);
       const data = res?.data || res;
       console.log("Datos del expediente:", data);
-
       const reportHTML = `
 <html>
   <head>
     <title>Reporte de ${data.fullName}</title>
     <style>
-      body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
-      h1 { text-align: center; color: #000; }
-      h2 { color: #333; margin-top: 20px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-      th, td { border: 1px solid #333; padding: 8px; text-align: left; }
-      th { background-color: #000; color: #fff; }
-      tr:nth-child(even) { background-color: #f2f2f2; }
-      .logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
-      .center { text-align: center; }
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+        color: #222;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
+
+      .header {
+        text-align: center;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      }
+
+      .logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+      }
+
+      .header h1 {
+        margin: 10px 0 5px;
+        color: #111;
+      }
+
+      .info {
+        color: #555;
+        font-size: 14px;
+      }
+
+      .section-title {
+        margin-top: 25px;
+        margin-bottom: 10px;
+        color: #111;
+        border-left: 4px solid #333;
+        padding-left: 10px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .card {
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 13px;
+        color: #777;
+      }
+
+      .card p {
+        font-size: 20px;
+        margin: 5px 0 0;
+        font-weight: bold;
+        color: #111;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+
+      th {
+        background: #222;
+        color: #fff;
+        padding: 10px;
+        font-size: 13px;
+      }
+
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+
+      .no-data {
+        text-align: center;
+        color: #777;
+        margin-top: 15px;
+      }
     </style>
   </head>
-  <body>
 
-    <div class="center">
-      ${student.logo && student.logo !== "SIN LOGO"
+  <body>
+    <div class="container">
+
+      <div class="header">
+        ${student.logo && student.logo !== "SIN LOGO"
           ? `<img src="data:image/png;base64,${student.logo}" class="logo" />`
           : ""
         }
 
-      <h1>Reporte de Estudiante</h1>
-      <p><strong>Nombre:</strong> ${data.fullName}</p>
-      <p><strong>Email:</strong> ${data.email}</p>
-      <p><strong>Activo:</strong> ${data.active ? "Sí" : "No"}</p>
-      <p><strong>Periodo:</strong> ${startDate} - ${endDate}</p>
-    </div>
+        <h1>Reporte de Estudiante</h1>
+        <div class="info">${data.fullName}</div>
+        <div class="info">${data.email}</div>
+        <div class="info">Activo: ${data.active ? "Sí" : "No"}</div>
+        <div class="info">Periodo: ${startDate} - ${endDate}</div>
+      </div>
 
-    <h2>Métricas</h2>
-    <p><strong>Total de tareas:</strong> ${data.totalTasks}</p>
-    <p><strong>Tareas por hacer:</strong> ${data.tasksToDo}</p>
-    <p><strong>Tareas en proceso:</strong> ${data.tasksDoing}</p>
-    <p><strong>Tareas completadas:</strong> ${data.tasksDone}</p>
-    <p><strong>Promedio:</strong> ${data.averageGrade ?? "-"}</p>
-    <p><strong>Entregas a tiempo:</strong> ${data.onTimePercentage != null ? data.onTimePercentage + "%" : "-"
-        }</p>
+      <div class="section-title">Métricas</div>
 
-    <h2>Historial de Tareas</h2>
+      <div class="stats">
+        <div class="card">
+          <h3>Total tareas</h3>
+          <p>${data.totalTasks ?? 0}</p>
+        </div>
 
-    ${data.taskHistory && data.taskHistory.length
+        <div class="card">
+          <h3>Por hacer</h3>
+          <p>${data.tasksToDo ?? 0}</p>
+        </div>
+
+        <div class="card">
+          <h3>En proceso</h3>
+          <p>${data.tasksDoing ?? 0}</p>
+        </div>
+
+        <div class="card">
+          <h3>Completadas</h3>
+          <p>${data.tasksDone ?? 0}</p>
+        </div>
+
+        <div class="card">
+          <h3>Promedio</h3>
+          <p>${data.averageGrade ?? "-"}</p>
+        </div>
+
+        <div class="card">
+          <h3>Entregas a tiempo</h3>
+          <p>${data.onTimePercentage != null ? data.onTimePercentage + "%" : "-"}</p>
+        </div>
+      </div>
+
+      <div class="section-title">Historial de Tareas</div>
+
+      ${data.taskHistory && data.taskHistory.length
           ? `
-        <table>
-          <thead>
-            <tr>
-              <th>Tarea</th>
-              <th>Estado</th>
-              <th>Calificación</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${data.taskHistory.map(t => `
+          <table>
+            <thead>
               <tr>
-                <td>${t.taskName || "-"}</td>
-                <td>${translateStatus(t.status)}</td>
-                <td>${t.grade ?? "-"}</td>
-                <td>${t.date || "-"}</td>
+                <th>Tarea</th>
+                <th>Estado</th>
+                <th>Calificación</th>
+                <th>Fecha</th>
               </tr>
-            `).join("")}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${data.taskHistory.map(t => `
+                <tr>
+                  <td>${t.taskName || "-"}</td>
+                  <td>${translateStatus(t.status)}</td>
+                  <td>${t.grade ?? "-"}</td>
+                  <td>${t.date || "-"}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
         `
-          : "<p>No hay tareas registradas</p>"
+          : `<p class="no-data">No hay tareas registradas</p>`
         }
 
+    </div>
   </body>
 </html>
 `;

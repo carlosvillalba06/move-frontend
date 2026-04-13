@@ -211,7 +211,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
           </div>
 
           <div className="form-group">
-            <label>Status</label>
+            <label>Estado</label>
             <select
               name="statusKanban"
               value={form.statusKanban}

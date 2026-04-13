@@ -113,7 +113,7 @@ export const updateTaskStatusRequest = async (id, status) => {
       status: statusAdapter.toBackend(status)
     })
   });
-};
+}
 
 /* =========================
    EVIDENCES

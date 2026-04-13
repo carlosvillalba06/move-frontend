@@ -1,19 +1,31 @@
 import React, { useRef, useState } from "react";
 import ConfirmAlert from "../../modals/ConfirmAlert";
 
-const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
+const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions, isReadOnly }) => {
 
   const isDragging = useRef(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [blockedAlert, setBlockedAlert] = useState(false);
 
   const taskId = task.id;
 
   const handleDelete = (e) => {
     e.stopPropagation();
+
+    if (isReadOnly) {
+      setBlockedAlert(true);
+      return;
+    }
+
     setConfirmOpen(true);
   };
 
   const handleConfirmDelete = () => {
+    if (isReadOnly) {
+      setConfirmOpen(false);
+      return;
+    }
+
     onDelete(taskId);
     setConfirmOpen(false);
   };
@@ -27,8 +39,10 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
     <>
       <div
         className="task-card"
-        draggable
+        draggable={!isReadOnly}
         onDragStart={(e) => {
+          if (isReadOnly) return;
+
           isDragging.current = true;
           e.dataTransfer.setData("text/plain", String(taskId));
           e.dataTransfer.effectAllowed = "move";
@@ -47,11 +61,11 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
         }}
         style={{
           borderLeft: `6px solid ${task.color || "#ccc"}`,
-          cursor: "grab",
-          position: "relative"
+          cursor: isReadOnly ? "default" : "grab",
+          position: "relative",
+          opacity: isReadOnly ? 0.95 : 1
         }}
       >
-        {/* ❌ Eliminar */}
         <button
           className="delete-btn"
           onClick={handleDelete}
@@ -63,7 +77,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
         <h4>{task.name}</h4>
         <p>{task.notes || "Sin descripción"}</p>
 
-        {/* 📦 Entregables */}
         <button
           className="submissions-btn"
           onClick={handleOpenSubmissions}
@@ -79,9 +92,7 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
           }}
         >
           Entregables
-          
         </button>
-
 
       </div>
 
@@ -90,6 +101,13 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions }) => {
         message="¿Seguro que quieres eliminar esta tarea?"
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmOpen(false)}
+      />
+
+      <ConfirmAlert
+        isOpen={blockedAlert}
+        message="No puedes eliminar tareas siendo administrador"
+        onConfirm={() => setBlockedAlert(false)}
+        onCancel={() => setBlockedAlert(false)}
       />
     </>
   );

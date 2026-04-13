@@ -14,6 +14,7 @@ import {
 } from "../../../services/adviserService";
 
 import { getTasksByAdviserRequest } from "../../../services/adminService";
+import { getAdviserReportByAdminRequest } from "../../../services/adminService";
 import { statusAdapter } from "../../../services/utils/statusAdapter";
 
 const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
@@ -35,27 +36,33 @@ const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
         <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Generar Reporte</h2>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <label style={{ fontWeight: "bold" }}>Desde:
+          <label><b>Desde:</b>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}
+              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
           </label>
-          <label style={{ fontWeight: "bold" }}>Hasta:
+
+          <label><b>Hasta:</b>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc", marginTop: "5px" }}
+              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
           </label>
         </div>
 
         <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
-          <Button variant="primary" onClick={() => onGenerate(startDate, endDate)}>Generar</Button>
-          <Button variant="secundary" onClick={onClose}>Cancelar</Button>
+          <Button variant="primary" onClick={() => onGenerate(startDate, endDate)}>
+            Generar
+          </Button>
+
+          <Button variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
         </div>
       </div>
     </div>
@@ -69,10 +76,24 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
   const [alertMessage, setAlertMessage] = useState("");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
+  const permissions = {
+    canCreate: !isAdminView,
+    canEdit: !isAdminView,
+    canDelete: !isAdminView,
+    canMove: !isAdminView,
+    canView: true,
+    canGenerateReport: true
+  };
+
+  const showAlert = (message) => {
+    setAlertMessage(message);
+    setAlertOpen(true);
+  };
+
   const loadData = useCallback(async () => {
     try {
       let tasksRes;
-      let studentsRes = [];
+      let studentsRes = null;
 
       if (isAdminView && adviserId) {
         tasksRes = await getTasksByAdviserRequest(adviserId);
@@ -82,18 +103,22 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
       }
 
       const rawTasks = tasksRes?.data || tasksRes || [];
+      console.log("Tareas crudas recibidas:", rawTasks);
 
-      const normalizedTasks = rawTasks.map(t => ({
-        ...t,
-        statusKanban: statusAdapter.toFrontend(t.statusKanban)
-      }));
+      const normalizedTasks = Array.isArray(rawTasks)
+        ? rawTasks.map(t => ({
+          ...t,
+          statusKanban: statusAdapter.toFrontend(t.statusKanban)
+        }))
+        : [];
 
-      setTasks(Array.isArray(normalizedTasks) ? normalizedTasks : []);
-      setStudents(Array.isArray(studentsRes?.data || studentsRes) ? studentsRes?.data || studentsRes : []);
+      setTasks(normalizedTasks);
 
-    } catch (error) {
-      setAlertMessage("Error cargando datos");
-      setAlertOpen(true);
+      const studentsData = studentsRes?.data || studentsRes || [];
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
+
+    } catch {
+      showAlert("Error cargando datos");
     }
   }, [adviserId, isAdminView]);
 
@@ -102,48 +127,67 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
   }, [loadData]);
 
   const handleCreateTask = async (form) => {
+    if (!permissions.canCreate) {
+      showAlert("No puedes crear tareas porque eres administrador");
+      return;
+    }
+
     try {
       await addTaskRequest(isAdminView ? { ...form, adviserId } : form);
       await loadData();
-      setAlertMessage("Tarea creada correctamente");
-      setAlertOpen(true);
-    } catch (error) {
-      setAlertMessage("Error al crear la tarea");
-      setAlertOpen(true);
+      showAlert("Tarea creada correctamente");
+    } catch {
+      showAlert("Error al crear la tarea");
     }
   };
 
   const handleMoveTask = async (taskId, newStatus) => {
+    if (!permissions.canMove) {
+      showAlert("No puedes mover tareas porque eres administrador");
+      return;
+    }
+
     try {
-      const backendStatus = statusAdapter.toBackend(newStatus);
-      await updateTaskStatusRequest(taskId, backendStatus);
+      await updateTaskStatusRequest(taskId, newStatus);
 
       setTasks(prev =>
         prev.map(t =>
-          t.id === taskId
-            ? { ...t, statusKanban: newStatus }
-            : t
+          t.id === taskId ? { ...t, statusKanban: newStatus } : t
         )
       );
-    } catch (error) {
-      setAlertMessage("Error al mover tarea");
-      setAlertOpen(true);
+    } catch {
+      showAlert("Error al mover tarea");
     }
   };
 
   const handleUpdateTask = async (id, formData) => {
+    if (!permissions.canEdit) {
+      showAlert("No puedes editar tareas porque eres administrador");
+      return;
+    }
+
     try {
       await updateTaskRequest(id, formData);
       await loadData();
-      setAlertMessage("Tarea actualizada correctamente");
-      setAlertOpen(true);
-    } catch (error) { }
+      showAlert("Tarea actualizada correctamente");
+    } catch {
+      showAlert("Error al actualizar tarea");
+    }
   };
 
   const handleDeleteTask = async (id) => {
-    setAlertMessage("Los asesores no tienen permisos para eliminar tareas");
-    setAlertOpen(true);
-    return; 
+    if (!permissions.canDelete) {
+      showAlert("No puedes eliminar tareas porque eres administrador");
+      return;
+    }
+
+    try {
+      await deleteTaskRequest(id);
+      await loadData();
+      showAlert("Tarea eliminada correctamente");
+    } catch {
+      showAlert("Error al eliminar la tarea");
+    }
   };
 
   const translateStatus = (status) => {
@@ -156,138 +200,254 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
   const handleGenerateProjectReport = async (startDate, endDate) => {
     try {
       setIsReportModalOpen(false);
+
       if (!startDate || !endDate) {
-        setAlertMessage("Selecciona ambas fechas");
-        setAlertOpen(true);
+        showAlert("Selecciona ambas fechas");
         return;
       }
 
-      const res = await getAdviserReportRequest(startDate, endDate, adviserId);
-      const report = res?.data || res;
+      let res;
+
+      if (isAdminView) {
+        res = await getAdviserReportByAdminRequest(adviserId, startDate, endDate);
+      } else {
+        res = await getAdviserReportRequest(startDate, endDate, adviserId);
+      }
+
+      const report = res?.data || res || {};
       
-      const { totalStudents, totalTasks, tasksToDo, tasksDoing, tasksDone, averageGrade, taskDetailReportDto } = report;
+
+      const {
+        totalStudents,
+        totalTasks,
+        tasksToDo,
+        tasksDoing,
+        tasksDone,
+        averageGrade,
+        taskDetailReportDto
+      } = report;
 
       const formatDate = (date) => {
         if (!date) return "-";
-        const d = new Date(date);
-        return d.toLocaleDateString();
+        return new Date(date).toLocaleDateString();
       };
 
-      const reportHTML = `
-        <html>
-          <head>
-            <title>Reporte de Proyecto</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 30px; color: #333; }
-              h1 { text-align: center; margin-bottom: 10px; }
-              h2 { margin-top: 30px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-              .summary p { margin: 5px 0; font-size: 14px; }
-              .summary b { display: inline-block; width: 180px; }
-              table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-              th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-              th { background-color: #000; color: #fff; }
-              tr:nth-child(even) { background-color: #f5f5f5; }
-              .no-data { margin-top: 10px; font-style: italic; color: #666; }
-              .footer { margin-top: 40px; text-align: right; font-size: 12px; color: #888; }
-            </style>
-          </head>
-          <body>
-            <h1>Reporte de Proyecto</h1>
-            <div class="summary">
-              <h2>Resumen</h2>
-              <p><b>Periodo:</b> ${startDate} - ${endDate}</p>
-              <p><b>Total estudiantes:</b> ${totalStudents ?? 0}</p>
-              <p><b>Total tareas:</b> ${totalTasks ?? 0}</p>
-              <p><b>Por hacer:</b> ${tasksToDo ?? 0}</p>
-              <p><b>En proceso:</b> ${tasksDoing ?? 0}</p>
-              <p><b>Completadas:</b> ${tasksDone ?? 0}</p>
-              <p><b>Promedio:</b> ${averageGrade ?? "N/A"}</p>
-            </div>
-            <h2>Detalle de tareas</h2>
-            ${taskDetailReportDto?.length ? `
-              <table>
-                <thead>
-                  <tr>
-                    <th>Tarea</th>
-                    <th>Estado</th>
-                    <th>Estudiante</th>
-                    <th>Calificación</th>
-                    <th>Fecha</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${taskDetailReportDto.map(t => `
-                    <tr>
-                      <td>${t.taskName || "-"}</td>
-                      <td>${translateStatus(t.status) || "-"}</td>
-                      <td>${t.studentName || "-"}</td>
-                      <td>${t.grade ?? "-"}</td>
-                      <td>${formatDate(t.date)}</td>
-                    </tr>
-                  `).join("")}
-                </tbody>
-              </table>
-            ` : `<p class="no-data">No hay datos en este periodo</p>`}
-            <div class="footer">Generado automáticamente</div>
-          </body>
-        </html>
-      `;
-
       const win = window.open("", "_blank");
-      win.document.write(reportHTML);
+
+      if (!win) {
+        showAlert("Permite ventanas emergentes");
+        return;
+      }
+
+      win.document.write(`
+  <html>
+    <head>
+      <title>Reporte</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #f4f4f4;
+          margin: 0;
+          padding: 20px;
+          color: #222;
+        }
+
+        .container {
+          max-width: 900px;
+          margin: auto;
+          background: #fff;
+          padding: 30px;
+          border-radius: 10px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header {
+          border-bottom: 2px solid #ddd;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+        }
+
+        .header h1 {
+          margin: 0;
+          color: #111;
+        }
+
+        .period {
+          color: #666;
+          font-size: 14px;
+        }
+
+        .stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 15px;
+          margin: 20px 0;
+        }
+
+        .card {
+          background: #fafafa;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 15px;
+          text-align: center;
+        }
+
+        .card h3 {
+          margin: 0;
+          font-size: 14px;
+          color: #777;
+        }
+
+        .card p {
+          font-size: 20px;
+          margin: 5px 0 0;
+          font-weight: bold;
+          color: #111;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+
+        th {
+          background: #222;
+          color: #fff;
+          padding: 10px;
+          font-size: 13px;
+        }
+
+        td {
+          padding: 10px;
+          border-bottom: 1px solid #ddd;
+          font-size: 13px;
+          text-align: center;
+        }
+
+        tr:nth-child(even) {
+          background: #f9f9f9;
+        }
+
+        .no-data {
+          text-align: center;
+          color: #777;
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="container">
+        
+        <div class="header">
+          <h1>Reporte de Proyecto</h1>
+          <div class="period">Periodo: ${startDate} - ${endDate}</div>
+        </div>
+
+        <div class="stats">
+          <div class="card">
+            <h3>Total estudiantes</h3>
+            <p>${totalStudents ?? 0}</p>
+          </div>
+
+          <div class="card">
+            <h3>Total tareas</h3>
+            <p>${totalTasks ?? 0}</p>
+          </div>
+
+          <div class="card">
+            <h3>Promedio</h3>
+            <p>${averageGrade ?? "N/A"}</p>
+          </div>
+
+          <div class="card">
+            <h3>Por hacer</h3>
+            <p>${tasksToDo ?? 0}</p>
+          </div>
+
+          <div class="card">
+            <h3>En proceso</h3>
+            <p>${tasksDoing ?? 0}</p>
+          </div>
+
+          <div class="card">
+            <h3>Completadas</h3>
+            <p>${tasksDone ?? 0}</p>
+          </div>
+        </div>
+
+        ${taskDetailReportDto?.length
+          ? `
+            <table>
+              <thead>
+                <tr>
+                  <th>Tarea</th>
+                  <th>Estado</th>
+                  <th>Estudiante</th>
+                  <th>Calificación</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${taskDetailReportDto.map(t => 
+                  `
+                  
+
+                  <tr>
+                    <td>${t.taskName || "-"}</td>
+                   <td>${translateStatus(statusAdapter.toFrontend(t.status))}</td>
+                    <td>${t.studentName || "-"}</td>
+                    <td>${t.grade ?? "-"}</td>
+                    <td>${formatDate(t.date)}</td>
+                    
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          `
+          : `<p class="no-data">No hay datos</p>`
+        }
+
+      </div>
+    </body>
+  </html>
+`);
       win.document.close();
       win.focus();
       setTimeout(() => {
         win.print();
         win.close();
       }, 500);
-    } catch (error) {
-      setAlertMessage("Error al generar el reporte");
-      setAlertOpen(true);
+
+    } catch {
+      showAlert("Error al generar el reporte");
     }
   };
 
   return (
     <main style={{ padding: "20px" }}>
-      <header style={{ textAlign: "right", marginBottom: "30px", marginRight: "20px" }}>
+      <header style={{ textAlign: "right", marginBottom: "30px" }}>
         <Button variant="primary" onClick={() => setIsReportModalOpen(true)}>
           Generar Reporte por Proyecto
         </Button>
       </header>
 
-      <section className="kanban-board" style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
-        <KanbanColumn
-          title="Por hacer"
-          status="TODO"
-          tasks={tasks}
-          advisors={students}
-          onCreateTask={handleCreateTask}
-          onMoveTask={handleMoveTask}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-        />
-
-        <KanbanColumn
-          title="En proceso"
-          status="IN_PROGRESS"
-          tasks={tasks}
-          advisors={students}
-          onCreateTask={handleCreateTask}
-          onMoveTask={handleMoveTask}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-        />
-
-        <KanbanColumn
-          title="Completado"
-          status="DONE"
-          tasks={tasks}
-          advisors={students}
-          onCreateTask={handleCreateTask}
-          onMoveTask={handleMoveTask}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-        />
+      <section style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+        {["TODO", "IN_PROGRESS", "DONE"].map(status => (
+          <KanbanColumn
+            key={status}
+            title={translateStatus(status)}
+            status={status}
+            tasks={tasks}
+            advisors={students}
+            onCreateTask={handleCreateTask}
+            onMoveTask={handleMoveTask}
+            onUpdateTask={handleUpdateTask}
+            onDeleteTask={handleDeleteTask}
+            isReadOnly={isAdminView}
+          />
+        ))}
       </section>
 
       <ReportDateModal
@@ -305,4 +465,4 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
   );
 };
 
-export default KanbanBoard;
+export default KanbanBoard; 

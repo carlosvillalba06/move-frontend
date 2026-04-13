@@ -87,7 +87,13 @@ const SubmissionsModal = ({ task, onClose }) => {
 
   const previewFile = (file) => {
     try {
-      const byteCharacters = atob(file.file);
+      let base64Data = file.file;
+
+      if (base64Data.includes(",")) {
+        base64Data = base64Data.split(",")[1];
+      }
+
+      const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
 
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -96,13 +102,19 @@ const SubmissionsModal = ({ task, onClose }) => {
 
       const blob = new Blob(
         [new Uint8Array(byteNumbers)],
-        { type: file.fileType }
+        { type: file.fileType || "application/octet-stream" }
       );
 
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
 
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (file.fileType?.startsWith("image/")) {
+        const imgWindow = window.open("");
+        imgWindow.document.write(`<img src="${url}" style="width:100%" />`);
+      } else {
+        window.open(url, "_blank");
+      }
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
 
     } catch (error) {
       console.error("Error al abrir archivo:", error);
@@ -168,38 +180,28 @@ const SubmissionsModal = ({ task, onClose }) => {
           const studentId = student.studentId;
 
           return (
-            <div key={studentId} style={{
-              border: "1px solid #ccc",
-              padding: "15px",
-              marginBottom: "15px",
-              borderRadius: "10px",
-              background: "#f9f9f9"
-            }}>
+            <div key={studentId} className="student-card">
 
-              <h4 style={{ marginBottom: "10px" }}>{student.name}</h4>
+              <div className="student-header">
+                <h4>{student.name}</h4>
+              </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+              {/* 📁 Archivos */}
+              <div className="files-container">
                 {student.evidences.map(ev => (
-                  <button
-                    key={ev.id}
-                    onClick={() => previewFile(ev)}
-                    style={{
-                      background: "#000",
-                      color: "#fff",
-                      border: "none",
-                      padding: "6px",
-                      borderRadius: "5px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {ev.fileName || "Ver archivo"}
-                  </button>
+                  <div key={ev.id} className="file-item">
+                    <span>{ev.fileName || "Archivo"}</span>
+
+                    <button onClick={() => previewFile(ev)}>
+                      Ver
+                    </button>
+                  </div>
                 ))}
               </div>
 
-              <div style={{ marginTop: "15px" }}>
+              {/* 📝 Evaluación */}
+              <div className="grade-section">
 
-                
                 <input
                   type="number"
                   min="0"
@@ -212,13 +214,6 @@ const SubmissionsModal = ({ task, onClose }) => {
                       [studentId]: e.target.value
                     }))
                   }
-                  style={{
-                    width: "100%",
-                    padding: "6px",
-                    marginBottom: "5px",
-                    borderRadius: "5px",
-                    border: "1px solid #ccc"
-                  }}
                 />
 
                 <textarea
@@ -230,33 +225,19 @@ const SubmissionsModal = ({ task, onClose }) => {
                       [studentId]: e.target.value
                     }))
                   }
-                  style={{
-                    width: "100%",
-                    padding: "6px",
-                    borderRadius: "5px",
-                    border: "1px solid #ccc"
-                  }}
                 />
 
                 <button
                   onClick={() => handleGrade(studentId)}
                   disabled={saving[studentId] || !grades[studentId]}
-                  style={{
-                    marginTop: "8px",
-                    width: "100%",
-                    padding: "8px",
-                    background: saving[studentId] ? "#888" : "#000",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer"
-                  }}
                 >
-                  {saving[studentId] ? "Guardando..." : "Guardar calificación"}
+                  {saving[studentId] ? "Guardando..." : "Guardar"}
                 </button>
 
               </div>
+
             </div>
+
           );
         })}
 

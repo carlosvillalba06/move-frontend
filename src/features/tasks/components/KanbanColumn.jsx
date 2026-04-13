@@ -15,6 +15,7 @@ const KanbanColumn = ({
   onDeleteTask,
   isReadOnly = false
 }) => {
+
   const [openModal, setOpenModal] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -23,10 +24,39 @@ const KanbanColumn = ({
   const columnTasks = tasks.filter(task => task.statusKanban === status);
 
   const handleSaveTask = async (formData) => {
+    if (isReadOnly) return; 
+
+    try {
+      formData.append("statusKanban", status);
+      await onCreateTask(formData);
+      setOpenModal(false);
+    } catch (error) {
+      console.error("Error creando tarea:", error);
+    }
+  };
+
+  const handleDragOver = (e) => {
     if (isReadOnly) return;
-    formData.append("statusKanban", status);
-    await onCreateTask(formData);
-    setOpenModal(false);
+
+    e.preventDefault();
+    setIsOver(true);
+  };
+
+  const handleDrop = (e) => {
+    if (isReadOnly) return;
+    e.preventDefault();
+
+    const taskId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+
+    if (!isNaN(taskId)) { 
+      onMoveTask(taskId, status);
+    }
+
+    setIsOver(false);
+  };
+
+  const handleDragLeave = () => {
+    setIsOver(false);
   };
 
   return (
@@ -34,38 +64,35 @@ const KanbanColumn = ({
       <h3>{title}</h3>
 
       {!isReadOnly && (
-        <button className="add-task" onClick={() => setOpenModal(true)}>
+        <button
+          className="add-task"
+          onClick={() => setOpenModal(true)}
+        >
           + Agregar tarea
         </button>
       )}
 
       <div
-        className={`task-list ${isOver ? "drag-over" : ""}`}
-        onDragOver={(e) => {
-          if (isReadOnly) return;
-          e.preventDefault();
-          setIsOver(true);
-        }}
-        onDrop={(e) => {
-          if (isReadOnly) return;
-
-          e.preventDefault();
-          const taskId = parseInt(e.dataTransfer.getData("text/plain"), 10);
-          if (!isNaN(taskId)) {
-            onMoveTask(taskId, status);
-          }
-          setIsOver(false);
-        }}
+        className={`task-list ${isOver && !isReadOnly ? "drag-over" : ""}`}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onDragLeave={handleDragLeave}
         style={{ minHeight: "100px" }}
       >
+        {columnTasks.length === 0 && (
+          <p style={{ textAlign: "center", opacity: 0.6 }}>
+            Sin tareas
+          </p>
+        )}
+
         {columnTasks.map(task => (
           <TaskCard
             key={task.id}
             task={task}
-            isReadOnly={isReadOnly}
-            onOpenDetails={setSelectedTask}
-            onDelete={onDeleteTask}
+            onOpenDetails={(task) => setSelectedTask(task)}
+            onDelete={isReadOnly ? null : onDeleteTask}
             onOpenSubmissions={setSelectedTaskSubmissions}
+            isReadOnly={isReadOnly}
           />
         ))}
       </div>
@@ -82,9 +109,9 @@ const KanbanColumn = ({
         <TaskDetailsModal
           task={selectedTask}
           advisors={advisors}
-          isReadOnly={isReadOnly}
+          isReadOnly={isReadOnly} 
           onClose={() => setSelectedTask(null)}
-          onSave={onUpdateTask}
+          onSave={isReadOnly ? null : onUpdateTask} 
         />
       )}
 
