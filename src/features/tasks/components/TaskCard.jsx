@@ -11,12 +11,10 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions, isReadOnly
 
   const handleDelete = (e) => {
     e.stopPropagation();
-
     if (isReadOnly) {
       setBlockedAlert(true);
       return;
     }
-
     setConfirmOpen(true);
   };
 
@@ -25,7 +23,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions, isReadOnly
       setConfirmOpen(false);
       return;
     }
-
     onDelete(taskId);
     setConfirmOpen(false);
   };
@@ -42,7 +39,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions, isReadOnly
         draggable={!isReadOnly}
         onDragStart={(e) => {
           if (isReadOnly) return;
-
           isDragging.current = true;
           e.dataTransfer.setData("text/plain", String(taskId));
           e.dataTransfer.effectAllowed = "move";
@@ -54,7 +50,6 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions, isReadOnly
         }}
         onClick={(e) => {
           if (e.target.closest("button")) return;
-
           if (!isDragging.current) {
             onOpenDetails(task);
           }
@@ -62,38 +57,23 @@ const TaskCard = ({ task, onOpenDetails, onDelete, onOpenSubmissions, isReadOnly
         style={{
           borderLeft: `6px solid ${task.color || "#ccc"}`,
           cursor: isReadOnly ? "default" : "grab",
-          position: "relative",
-          opacity: isReadOnly ? 0.95 : 1
+          opacity: isReadOnly ? 0.8 : 1
         }}
       >
-        <button
-          className="delete-btn"
-          onClick={handleDelete}
-          onMouseDown={(e) => e.stopPropagation()}
-        >
-          X
+        <button className="delete-btn" onClick={handleDelete}>
+          <svg className="delete-icon" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
         </button>
 
-        <h4>{task.name}</h4>
-        <p>{task.notes || "Sin descripción"}</p>
+        <div className="task-content">
+          <h4>{task.name}</h4>
+          <p>{task.notes || "Sin descripción adicional"}</p>
+        </div>
 
-        <button
-          className="submissions-btn"
-          onClick={handleOpenSubmissions}
-          onMouseDown={(e) => e.stopPropagation()}
-          style={{
-            marginTop: "8px",
-            fontSize: "12px",
-            padding: "4px 8px",
-            borderRadius: "6px",
-            border: "none",
-            background: "#eee",
-            cursor: "pointer"
-          }}
-        >
-          Entregables
+        <button className="submissions-btn" onClick={handleOpenSubmissions}>
+          Ver Entregables
         </button>
-
       </div>
 
       <ConfirmAlert

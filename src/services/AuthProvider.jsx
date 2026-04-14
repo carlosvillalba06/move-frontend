@@ -4,16 +4,18 @@ import { loginRequest } from "./authService";
 import { getAdviserInformationRequest } from "./adviserService";
 import { getAdminInformationRequest } from "./adminService";
 
-
 function AuthProvider({ children }) {
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadSession = async () => {
       const storedSession = localStorage.getItem("session");
 
-      if (!storedSession) return;
+      if (!storedSession) {
+        setLoading(false);
+        return;
+      }
 
       const parsed = JSON.parse(storedSession);
 
@@ -38,12 +40,11 @@ function AuthProvider({ children }) {
 
         setSession(updatedSession);
         localStorage.setItem("session", JSON.stringify(updatedSession));
-
       } catch (error) {
         setSession(parsed);
       }
 
-      setLoading(false)
+      setLoading(false);
     };
 
     loadSession();
@@ -52,9 +53,24 @@ function AuthProvider({ children }) {
   const login = async (username, password) => {
     try {
       const data = await loginRequest(username, password);
-      if (!data) return false;
+      console.log("Login response data:", data.user);
+      if (!data) {
+        setLoading(false);
+        return false;
+      }
+
+      if (data.user?.rol === "STUDENT") {
+        setLoading(false);
+        return "unauthorized";
+      }
+
+      if (data.user?.status === false) {
+        setLoading(false);
+        return "disabled";
+      }
 
       let fullUserInfo = data.user;
+
       try {
         if (data.user?.rol === "ADMIN") {
           const res = await getAdminInformationRequest();
@@ -77,20 +93,22 @@ function AuthProvider({ children }) {
 
       localStorage.setItem("session", JSON.stringify(sessionData));
       setSession(sessionData);
+      setLoading(false);
 
       return true;
+
     } catch (error) {
       console.error("Login error", error);
+      setLoading(false);
       return false;
     }
   };
 
   const logout = () => {
-    setSession(null)
-    localStorage.removeItem('session'),
-      localStorage.removeItem('token')
-  }
-
+    setSession(null);
+    localStorage.removeItem("session");
+    localStorage.removeItem("token");
+  };
 
   return (
     <AuthContext.Provider
@@ -103,9 +121,10 @@ function AuthProvider({ children }) {
         isLoggedIn: !!session,
         loading
       }}
-    >{children}
+    >
+      {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export default AuthProvider;

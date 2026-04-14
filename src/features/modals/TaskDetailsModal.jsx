@@ -4,7 +4,7 @@ import Button from "../../components/Button";
 import Input from "../../components/Input";
 import ConfirmAlert from "./ConfirmAlert";
 
-const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
+const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -22,11 +22,14 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   const [removedFiles, setRemovedFiles] = useState([]);
   const [errors, setErrors] = useState({});
 
+  const activeAdvisors = advisors.filter(advisor => advisor.statusAdviserStudent === true);
+
+  const [blockedAlert, setBlockedAlert] = useState(false);
+
   const normalizeIds = (arr) => (arr || []).map(Number);
 
   useEffect(() => {
     if (task) {
-
       const parsedStudents = (task.students || []).map(s =>
         typeof s === "object" ? Number(s.studentID || s.id) : Number(s)
       );
@@ -122,6 +125,11 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (isReadOnly) {
+      setBlockedAlert(true);
+      return;
+    }
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -132,6 +140,11 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
   };
 
   const handleConfirmSave = () => {
+    if (isReadOnly) {
+      setConfirmOpen(false);
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append("name", form.name);
@@ -142,10 +155,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
     formData.append("limitDate", form.limitDate);
 
     formData.append("studentIDs", JSON.stringify(form.studentIDs));
-
-    console.log("UPDATE studentIDs:", form.studentIDs);
-    console.log("TIPOS:", form.studentIDs.map(x => typeof x));
-    console.log("JSON:", JSON.stringify(form.studentIDs));
 
     form.files.forEach(file => {
       formData.append("files", file);
@@ -174,26 +183,26 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
 
         <form onSubmit={handleSubmit} className="task-form">
 
-          <div className="form-group row-align">
             <label>Nombre</label>
             <Input
+              variant="modal"
+              size="md"
               name="name"
               value={form.name}
               onChange={handleChange}
               error={errors.name}
-              variant="modal"
+             
+              disabled={isReadOnly}
             />
-          </div>
 
           <div className="form-group">
             <label>Asignar estudiantes</label>
-
             <StudentMultiSelect
-              students={advisors}
+              students={activeAdvisors}
               selected={form.studentIDs}
               onChange={handleSelectChange}
+              disabled={isReadOnly}
             />
-
             {errors.studentIDs && (
               <p className="error-message">{errors.studentIDs}</p>
             )}
@@ -207,35 +216,46 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               onChange={(e) =>
                 setForm(prev => ({ ...prev, color: e.target.value }))
               }
+              disabled={isReadOnly}
             />
           </div>
 
-          <div className="form-group">
-            <label>Estado</label>
-            <select
-              name="statusKanban"
-              value={form.statusKanban}
-              onChange={handleChange}
-            >
-              <option value="">Seleccionar</option>
-              <option value="TODO">Por hacer</option>
-              <option value="IN_PROGRESS">En progreso</option>
-              <option value="DONE">Completado</option>
-            </select>
-          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Estado</label>
+              <select
+                name="statusKanban"
+                value={form.statusKanban}
+                onChange={handleChange}
+                disabled={isReadOnly}
+              >
+                <option value="">Seleccionar</option>
+                <option value="TODO">Por hacer</option>
+                <option value="IN_PROGRESS">En progreso</option>
+                <option value="DONE">Completado</option>
+              </select>
+              {errors.statusKanban && (
+                <p className="error-message">{errors.statusKanban}</p>
+              )}
+            </div>
 
-          <div className="form-group">
-            <label>Prioridad</label>
-            <select
-              name="priority"
-              value={form.priority}
-              onChange={handleChange}
-            >
-              <option value="">Seleccionar</option>
-              <option value="LOW">Baja</option>
-              <option value="MEDIUM">Media</option>
-              <option value="HIGH">Alta</option>
-            </select>
+            <div className="form-group">
+              <label>Prioridad</label>
+              <select
+                name="priority"
+                value={form.priority}
+                onChange={handleChange}
+                disabled={isReadOnly}
+              >
+                <option value="">Seleccionar</option>
+                <option value="LOW">Baja</option>
+                <option value="MEDIUM">Media</option>
+                <option value="HIGH">Alta</option>
+              </select>
+              {errors.priority && (
+                <p className="error-message">{errors.priority}</p>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
@@ -245,18 +265,33 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               name="limitDate"
               value={form.limitDate}
               onChange={handleChange}
+              error={errors.limitDate}
+              disabled={isReadOnly}
             />
           </div>
 
           <div className="form-group">
-            <label>Subir nuevos archivos</label>
-            <input type="file" multiple onChange={handleFileChange} />
+            <label>Subir archivos</label>
+            <div className="file-input-wrapper">
+              <label htmlFor="file-upload" className="file-input-label">
+                {form.files.length > 0
+                  ? `${form.files.length} archivos seleccionados`
+                  : "Seleccionar archivos"}
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                className="file-input-hidden"
+                onChange={handleFileChange}
+                disabled={isReadOnly}
+              />
+            </div>
           </div>
 
           {task.files?.length > 0 && (
             <div className="form-group">
               <label>Archivos actuales</label>
-
               {task.files
                 .filter(file => !removedFiles.includes(file.id))
                 .map(file => (
@@ -264,7 +299,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
                     <button type="button" onClick={() => previewFile(file)}>
                       {file.fileName}
                     </button>
-
                     <button type="button" onClick={() => handleRemoveExistingFile(file.id)}>
                       ✕
                     </button>
@@ -279,6 +313,8 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
               name="description"
               value={form.description}
               onChange={handleChange}
+              disabled={isReadOnly}
+              rows="3"
             />
           </div>
 
@@ -286,7 +322,6 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
             <Button variant="secondary" onClick={onClose}>
               Cancelar
             </Button>
-
             <Button variant="primary" type="submit">
               Guardar Cambios
             </Button>
@@ -300,6 +335,13 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave }) => {
         message="¿Deseas guardar los cambios?"
         onConfirm={handleConfirmSave}
         onCancel={() => setConfirmOpen(false)}
+      />
+
+      <ConfirmAlert
+        isOpen={blockedAlert}
+        message="No puedes editar tareas siendo administrador"
+        onConfirm={() => setBlockedAlert(false)}
+        onCancel={() => setBlockedAlert(false)}
       />
     </div>
   );

@@ -46,58 +46,264 @@
 .add-task:hover {
   background: #ffffff;
 }
-
-/* Tasks */
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px; /* Aumentamos el espacio entre tarjetas */
+  padding: 10px; /* Espacio interno para que las sombras no se corten */
 }
 
 .task-card {
   background: white;
-  border-radius: 10px;
-  padding: 30px 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  min-height: 100px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 5px; /* Margen de seguridad extra */
 }
 
+.task-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
 
- .delete-btn {
+.task-content h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  padding-right: 35px;
+}
+
+.task-content p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.submissions-btn {
+  align-self: flex-start;
+  margin-top: 8px; /* Espacio extra arriba del botón */
+  background: #f3f3f3;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 10;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
   background: transparent;
+  border-radius: 8px;
   border: none;
-  border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-  --icon-color: #555;
-}
-
-.delete-icon {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: var(--icon-color);
-  stroke-width: 2;
-  transition: stroke 0.15s ease;
+  transition: all 0.2s;
 }
 
 .delete-btn:hover {
-  background-color: #fee2e2;
-  --icon-color: #e53935;
+  background: #fee2e2;
 }
 
-.delete-btn:active {
-  transform: scale(0.92);
-  background-color: #fecaca;
+.delete-icon {
+  width: 18px;
+  height: 18px;
+  stroke: #999;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.delete-btn:hover .delete-icon {
+  stroke: #dc2626;
+}
+
+.submissions-btn {
+  align-self: flex-start;
+  background: #ededed;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submissions-btn:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+  color: #000;
+}
+
+.submissions-btn:active {
+  transform: scale(0.96);
+}
+
+/* --- */
+.submissions-modal {
+  width: 700px;
+  max-width: 95%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.modal-body.scrollable {
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.student-card {
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.student-card.active {
+  border-color: #000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  cursor: pointer;
+  background: #fff;
+}
+
+.student-header h4 {
+  margin: 0;
+  font-size: 15px;
+  color: #000;
+}
+
+.student-header:hover {
+  background: #f9f9f9;
+}
+
+.student-body {
+  padding: 18px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.student-comment-box {
+  background: #f4f4f4;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+.student-comment-box p {
+  margin: 0;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.file-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.view-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.view-btn:hover {
+  background: #333;
+}
+
+.grading-area {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px dashed #f0f0f0;
+}
+
+.grading-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-group span {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.grading-fields input,
+.grading-fields textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.grading-fields input:focus,
+.grading-fields textarea:focus {
+  border-color: #000;
+  outline: none;
+}
+
+.grading-fields textarea {
+  resize: none;
+  min-height: 80px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
 }
 /* Responsive */
 @media (max-width: 768px) {

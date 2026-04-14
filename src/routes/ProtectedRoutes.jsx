@@ -5,7 +5,7 @@ function ProtectedRoutes({ allowedRoles }) {
 
   const { session, isLoggedIn, loading } = useAuth();
 
-    if (loading) return <div>Cargando...</div>;
+  if (loading) return <div>Cargando...</div>;
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
@@ -19,8 +19,10 @@ function ProtectedRoutes({ allowedRoles }) {
   ) {
     if (userRole === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
-    } else {
+    } else if (userRole === "adviser") {
       return <Navigate to="/advisor/dashboard" replace />;
+    } else {
+      return <Navigate to="/login" replace />;
     }
   }
 

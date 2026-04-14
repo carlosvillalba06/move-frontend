@@ -11,30 +11,27 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
     color: "#ffffff",
     statusKanban: "",
     priority: "",
-    startDate: "",
+    startDate: (() => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    })(),
     limitDate: "",
     description: "",
     files: []
   });
 
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-
   const [errors, setErrors] = useState({});
   const { user: authUser } = useAuth();
 
+  const activeAdvisors = advisors.filter(advisor => advisor.statusAdviserStudent === true);
+
   const handleSelectChange = (ids) => {
-    const cleanIds = ids.map(Number); 
-
-    setForm(prev => ({
-      ...prev,
-      studentIDs: cleanIds
-    }));
-
-    setErrors(prev => ({
-      ...prev,
-      studentIDs: ""
-    }));
+    const cleanIds = ids.map(Number);
+    setForm(prev => ({ ...prev, studentIDs: cleanIds }));
+    setErrors(prev => ({ ...prev, studentIDs: "" }));
   };
 
   const handleChange = (e) => {
@@ -71,7 +68,6 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
     if (!form.studentIDs.length) newErrors.studentIDs = "Debes asignar al menos un estudiante";
     if (!form.statusKanban) newErrors.statusKanban = "Selecciona un estado";
     if (!form.priority) newErrors.priority = "Selecciona una prioridad";
-    if (!form.startDate) newErrors.startDate = "Fecha inicio obligatoria";
     if (!form.limitDate) newErrors.limitDate = "Fecha límite obligatoria";
     return newErrors;
   };
@@ -86,27 +82,19 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
     }
 
     const dataToSend = new FormData();
-
     dataToSend.append("name", form.name);
     dataToSend.append("description", form.description || "");
     dataToSend.append("color", form.color || "#ffffff");
     dataToSend.append("priority", form.priority);
     dataToSend.append("startDate", form.startDate);
     dataToSend.append("limitDate", form.limitDate);
-
     dataToSend.append("studentIDs", JSON.stringify(form.studentIDs));
-
-    console.log("studentIDs:", form.studentIDs);
-    console.log("TIPOS:", form.studentIDs.map(x => typeof x));
-    console.log("JSON:", JSON.stringify(form.studentIDs));
 
     form.files.forEach((file) => {
       dataToSend.append("files", file);
     });
 
     onSave(dataToSend);
-
-    ;
   };
 
   return (
@@ -123,11 +111,12 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group row-align">
             <label>Nombre:</label>
             <Input
+             variant="modal"
+              size="md"
               name="name"
               value={form.name}
               onChange={handleChange}
               error={errors.name}
-              variant="modal"
             />
           </div>
 
@@ -135,7 +124,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
             <label>Asignar</label>
             <div style={{ width: "380px" }}>
               <StudentMultiSelect
-                students={advisors}
+                students={activeAdvisors}
                 selected={form.studentIDs}
                 onChange={handleSelectChange}
               />
@@ -156,49 +145,57 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Estado</label>
-            <select
-              name="statusKanban"
-              value={form.statusKanban}
-              onChange={handleChange}
-            >
-              <option value="">Seleccionar</option>
-              <option value="TODO">Por hacer</option>
-              <option value="IN_PROGRESS">En progreso</option>
-              <option value="DONE">Hecho</option>
-            </select>
-          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Estado</label>
+              <select
+                name="statusKanban"
+                value={form.statusKanban}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                <option value="TODO">Por hacer</option>
+                <option value="IN_PROGRESS">En progreso</option>
+                <option value="DONE">Hecho</option>
+              </select>
+              {errors.statusKanban && <p className="error-message">{errors.statusKanban}</p>}
+            </div>
 
-          <div className="form-group">
-            <label>Prioridad</label>
-            <select
-              name="priority"
-              value={form.priority}
-              onChange={handleChange}
-            >
-              <option value="">Seleccionar</option>
-              <option value="LOW">Baja</option>
-              <option value="MEDIUM">Media</option>
-              <option value="HIGH">Alta</option>
-            </select>
+            <div className="form-group">
+              <label>Prioridad</label>
+              <select
+                name="priority"
+                value={form.priority}
+                onChange={handleChange}
+              >
+                <option value="">Seleccionar</option>
+                <option value="LOW">Baja</option>
+                <option value="MEDIUM">Media</option>
+                <option value="HIGH">Alta</option>
+              </select>
+              {errors.priority && <p className="error-message">{errors.priority}</p>}
+            </div>
           </div>
 
           <div className="form-grid">
             <div className="form-group">
               <label>Fecha inicio</label>
               <Input
+              variant="modal"
+              size="md"
                 type="date"
                 name="startDate"
                 value={form.startDate}
-                onChange={handleChange}
-                error={errors.startDate}
+                readOnly
+                style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
               />
             </div>
 
             <div className="form-group">
               <label>Fecha límite</label>
               <Input
+              variant="modal"
+              size="md"
                 type="date"
                 name="limitDate"
                 value={form.limitDate}
@@ -219,29 +216,37 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           </div>
 
           <div className="form-group">
-            <label>Subir nuevos archivos</label>
-            <input
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              style={{ marginBottom: "10px" }}
-            />
-
-            {form.files.length > 0 && (
-              <div className="file-list-container">
-                {form.files.map((file, index) => (
-                  <div key={index} style={{ display: "flex", justifyContent: "space-between" }}>
-                    <button type="button" onClick={() => previewLocalFile(file)}>
-                      {file.name}
-                    </button>
-                    <button type="button" onClick={() => removeFile(index)}>
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <label>Subir archivos</label>
+            <div className="file-input-wrapper">
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                className="file-input-hidden"
+                onChange={handleFileChange}
+              />
+              <label htmlFor="file-upload" className="file-input-label">
+                {form.files.length > 0
+                  ? `${form.files.length} seleccionados`
+                  : "Adjuntar archivos"}
+              </label>
+            </div>
           </div>
+
+          {form.files.length > 0 && (
+            <div className="file-list-container" style={{ marginTop: "10px" }}>
+              {form.files.map((file, index) => (
+                <div key={index} style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                  <button type="button" className="btn-file-preview" onClick={() => previewLocalFile(file)}>
+                    {file.name}
+                  </button>
+                  <button type="button" onClick={() => removeFile(index)} style={{ border: "none", background: "none", cursor: "pointer" }}>
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="form-footer">
             <Button variant="secondary" onClick={onClose}>

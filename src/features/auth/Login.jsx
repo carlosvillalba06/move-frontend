@@ -8,7 +8,7 @@ import { useAuth } from "../../services/authContext";
 const Login = () => {
 
   const navigate = useNavigate();
-  const { login, session } = useAuth();
+  const { login } = useAuth();
 
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
@@ -20,7 +20,6 @@ const Login = () => {
   });
 
   const handleChange = (e) => {
-
     const { name, value } = e.target;
 
     setFormData(prev => ({
@@ -37,7 +36,6 @@ const Login = () => {
   };
 
   const validate = () => {
-
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -51,32 +49,39 @@ const Login = () => {
       newErrors.password = "La contraseña es obligatoria";
     }
 
-
     setErrors({ ...newErrors });
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     if (!validate()) return;
 
     try {
-
       setLoading(true);
       setServerError("");
 
-      const success = await login(
-        formData.email,
-        formData.password
-      );
+      const success = await login(formData.email, formData.password);
+
+      if (success === "disabled") {
+        setServerError("Tu cuenta está deshabilitada. Contacta al administrador.");
+        setLoading(false);
+        return;
+      }
+
+      if (success === "unauthorized") {
+        setServerError("No tienes permisos para acceder. Contacta al administrador.");
+        setLoading(false);
+        return;
+      }
 
       if (!success) {
         setServerError("Credenciales incorrectas");
         setLoading(false);
         return;
       }
+
       const storedSession = JSON.parse(localStorage.getItem("session"));
       const role = storedSession?.user?.rol?.toLowerCase();
 
@@ -85,32 +90,22 @@ const Login = () => {
       else navigate("/dashboard");
 
     } catch (err) {
-
       setServerError("Error al iniciar sesión");
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   return (
-
     <AuthLayout>
-
       <main className="login-container">
-
         <section className="login-box">
-
           <h1>Iniciar sesión</h1>
 
           <form className="login-form" onSubmit={handleSubmit}>
 
             <div>
               <label className="label">Correo</label>
-
               <Input
                 name="email"
                 placeholder="Correo"
@@ -123,9 +118,7 @@ const Login = () => {
             </div>
 
             <div>
-
               <label className="label">Contraseña</label>
-
               <Input
                 type="password"
                 name="password"
@@ -136,7 +129,6 @@ const Login = () => {
                 variant="login"
                 size="full"
               />
-
             </div>
 
             <p>
@@ -162,15 +154,10 @@ const Login = () => {
             </p>
 
           </form>
-
         </section>
-
       </main>
-
     </AuthLayout>
-
   );
-
 };
 
 export default Login;
