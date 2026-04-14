@@ -4,6 +4,7 @@ import Input from "../../components/Input";
 import Button from "../../components/Button";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { resetPasswordRequest } from "../../services/authService";
+import SuccessAlert from "../modals/SuccessAlert"; 
 
 const ForgotPasswordEmail = () => {
 
@@ -12,6 +13,7 @@ const ForgotPasswordEmail = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleChange = (e) => {
     setEmail(e.target.value);
@@ -35,6 +37,34 @@ const ForgotPasswordEmail = () => {
     return true;
   };
 
+  const cleanErrorMessage = (message) => {
+    if (!message) return "Ocurrió un error";
+
+    const parts = message.split(/(?<=\b)/);
+    const unique = [...new Set(parts)];
+
+    return unique.join("").trim();
+  };
+
+  const mapErrorMessage = (message) => {
+
+    const msg = message.toLowerCase();
+
+    if (msg.includes("user not found")) {
+      return "No existe una cuenta con este correo";
+    }
+
+    if (msg.includes("invalid email")) {
+      return "El correo no es válido";
+    }
+
+    if (msg.includes("already been verified")) {
+      return "Este correo ya está verificado";
+    }
+
+    return message;
+  };
+
   const handleSubmit = async (e) => {
 
     e.preventDefault();
@@ -50,11 +80,16 @@ const ForgotPasswordEmail = () => {
       localStorage.setItem("email", email);
       localStorage.setItem("processType", "reset");
 
-      navigate("/verify-code");
+      setShowAlert(true);
 
     } catch (err) {
 
-      setError(err.message || "Ocurrió un error");
+      let message = err.message || "Ocurrió un error";
+
+      message = cleanErrorMessage(message);
+      message = mapErrorMessage(message);
+
+      setError(message);
 
     } finally {
 
@@ -62,6 +97,11 @@ const ForgotPasswordEmail = () => {
 
     }
 
+  };
+
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+    navigate("/verify-code");
   };
 
   return (
@@ -87,19 +127,28 @@ const ForgotPasswordEmail = () => {
               size="full"
             />
 
-            {error && (
-              <p className="error-message">{error}</p>
-            )}
 
             <br />
             <br />
-            <Button variant="primary" size="full" type="submit">
-              Continuar
+
+            <Button 
+              variant="primary" 
+              size="full" 
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Enviando..." : "Continuar"}
             </Button>
 
           </form>
 
         </section>
+
+        <SuccessAlert
+          isOpen={showAlert}
+          message="El código se ha enviado a tu correo"
+          onClose={handleCloseAlert}
+        />
 
       </main>
 

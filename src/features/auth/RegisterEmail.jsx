@@ -4,6 +4,7 @@ import { registerRequest } from "../../services/authService";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import AuthLayout from "../../components/layouts/AuthLayout";
+import SuccessAlert from "../modals/SuccessAlert";
 
 const RegisterEmail = () => {
 
@@ -12,6 +13,7 @@ const RegisterEmail = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleChange = (e) => {
     setEmail(e.target.value);
@@ -19,7 +21,6 @@ const RegisterEmail = () => {
   };
 
   const validate = () => {
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email) {
@@ -35,36 +36,77 @@ const RegisterEmail = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
 
+  const cleanErrorMessage = (message) => {
+    if (!message) return "Ocurrió un error";
+
+    const parts = message.split(/(?<=\bverified\b)/i);
+
+    // Elimina duplicados
+    const unique = [...new Set(parts)];
+
+    return unique.join(" ").trim();
+  };
+
+  const mapErrorMessage = (message) => {
+
+  const msg = message.toLowerCase();
+
+  if (msg.includes("already been verified")) {
+    return "Este correo ya tiene una cuenta registrada";
+  }
+
+  if (msg.includes("user already exists")) {
+    return "Este correo ya está registrado";
+  }
+
+  if (msg.includes("invalid email")) {
+    return "El correo no es válido";
+  }
+
+  if (msg.includes("user not found")) {
+    return "Este correo no está registrado";
+  }
+
+  return message;
+};
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validate()) return;
 
     try {
-
       setLoading(true);
 
       await registerRequest(email);
+
       localStorage.setItem("email", email);
       localStorage.setItem("processType", "register");
-      navigate("/verify-code");
+
+      setShowAlert(true);
 
     } catch (err) {
 
-      setError(err.message);
+      let message = err.message || "Ocurrió un error";
+
+      message = cleanErrorMessage(message);
+      message = mapErrorMessage(message);
+
+      setError(message);
 
     } finally {
-
       setLoading(false);
-
     }
+  };
 
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+    navigate("/verify-code");
   };
 
   return (
     <AuthLayout>
-
       <main className="login-container">
 
         <section className="login-box">
@@ -85,22 +127,30 @@ const RegisterEmail = () => {
               size="full"
             />
 
-            {error && (
-              <p className="error-message">{error}</p>
-            )}
 
             <br />
             <br />
-            <Button variant="primary" size="full" type="submit">
-              Continuar
+
+            <Button
+              variant="primary"
+              size="full"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Enviando..." : "Continuar"}
             </Button>
 
           </form>
 
         </section>
 
-      </main>
+        <SuccessAlert
+          isOpen={showAlert}
+          message="El código se ha enviado a tu correo"
+          onClose={handleCloseAlert}
+        />
 
+      </main>
     </AuthLayout>
   );
 };

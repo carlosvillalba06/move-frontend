@@ -15,6 +15,9 @@ const SubmissionsModal = ({ task, onClose }) => {
   const [openStudent, setOpenStudent] = useState(null);
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, message: "" });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
+
   const getStudentId = (student) =>
     typeof student === "number"
       ? student
@@ -22,13 +25,10 @@ const SubmissionsModal = ({ task, onClose }) => {
 
   const getStudentName = (student, id) => {
     if (!student) return `ID: ${id}`;
-
     const name = student.firstName
       ? `${student.firstName} ${student.lastName}`
       : (student.fullName || student.name || student.nombre || student.username);
-
     const nestedName = student.User?.fullName || student.Student?.name;
-
     return name || nestedName || `Estudiante #${id}`;
   };
 
@@ -58,7 +58,7 @@ const SubmissionsModal = ({ task, onClose }) => {
       setStudentsWithEvidence(filtered);
       if (filtered.length > 0) setOpenStudent(filtered[0].studentId);
     } catch (error) {
-      console.error("Error cargando evidencias:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -69,8 +69,13 @@ const SubmissionsModal = ({ task, onClose }) => {
       fetchStudentsWithEvidence();
       setGrades({});
       setFeedbacks({});
+      setCurrentPage(1);
     }
   }, [task]);
+
+  const totalPages = Math.ceil(studentsWithEvidence.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedStudents = studentsWithEvidence.slice(startIndex, startIndex + itemsPerPage);
 
   const previewFile = (file) => {
     try {
@@ -121,57 +126,49 @@ const SubmissionsModal = ({ task, onClose }) => {
             <div className="empty-state">No hay entregas registradas.</div>
           )}
 
-          {!loading && studentsWithEvidence.map(student => {
+          {!loading && paginatedStudents.map(student => {
             const isOpen = openStudent === student.studentId;
             return (
               <div key={student.studentId} className={`student-card ${isOpen ? 'active' : ''}`}>
                 <div className="student-header" onClick={() => setOpenStudent(isOpen ? null : student.studentId)}>
                   <h4>{student.name}</h4>
-                  <span className="arrow">{isOpen ? "▲" : "▼"}</span>
+                  <span>{isOpen ? "▲" : "▼"}</span>
                 </div>
-
                 {isOpen && (
                   <div className="student-body">
                     <div className="student-comment-box">
                       <label className="section-label">Nota del Alumno</label>
                       <p>{student.evidences[0]?.comment || "Sin comentario."}</p>
                     </div>
-
                     <div className="evidence-list">
-                      <label className="section-label">Archivos Adjuntos</label>
+                      <label className="section-label">Archivos</label>
                       {student.evidences.map((ev, idx) => (
                         <div key={idx} className="file-row">
                           <span>{ev.fileName || "Archivo"}</span>
-                          <button className="view-btn" onClick={() => previewFile(ev)}>Ver Archivo</button>
+                          <button className="view-btn" onClick={() => previewFile(ev)}>Ver</button>
                         </div>
                       ))}
                     </div>
-
                     <div className="grading-area">
-                      <label className="section-label">Evaluación del Asesor</label>
+                      <label className="section-label">Evaluación</label>
                       <div className="grading-fields">
-                        <div className="input-group">
-                          <span>Calificación</span>
-                          <input
-                            type="number"
-                            min="0" max="10" step="0.1"
-                            value={grades[student.studentId] || ""}
-                            onChange={(e) => setGrades(prev => ({ ...prev, [student.studentId]: e.target.value }))}
-                          />
-                        </div>
-                        <div className="input-group">
-                          <span>Retroalimentación</span>
-                          <textarea
-                            value={feedbacks[student.studentId] || ""}
-                            onChange={(e) => setFeedbacks(prev => ({ ...prev, [student.studentId]: e.target.value }))}
-                          />
-                        </div>
+                        <input
+                          type="number"
+                          min="0" max="10" step="0.1"
+                          placeholder="0.0"
+                          value={grades[student.studentId] || ""}
+                          onChange={(e) => setGrades(prev => ({ ...prev, [student.studentId]: e.target.value }))}
+                        />
+                        <textarea
+                          placeholder="Retroalimentación..."
+                          value={feedbacks[student.studentId] || ""}
+                          onChange={(e) => setFeedbacks(prev => ({ ...prev, [student.studentId]: e.target.value }))}
+                        />
                         <Button
-                          variant="primary"
                           onClick={() => handleGrade(student.studentId)}
                           disabled={saving[student.studentId] || !grades[student.studentId]}
                         >
-                          {saving[student.studentId] ? "Enviando..." : "Guardar Calificación"}
+                          {saving[student.studentId] ? "Enviando..." : "Calificar"}
                         </Button>
                       </div>
                     </div>
@@ -181,6 +178,26 @@ const SubmissionsModal = ({ task, onClose }) => {
             );
           })}
         </div>
+
+        {!loading && studentsWithEvidence.length > itemsPerPage && (
+          <div className="pagination">
+            <button 
+              className="pag-btn"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              &laquo; Anterior
+            </button>
+            <span className="pag-info">Página <b>{currentPage}</b> de {totalPages}</span>
+            <button 
+              className="pag-btn"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Siguiente &raquo;
+            </button>
+          </div>
+        )}
       </div>
       <SuccessAlert
         isOpen={alertConfig.isOpen}
