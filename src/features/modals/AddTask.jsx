@@ -9,14 +9,10 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
     name: "",
     studentIDs: [],
     color: "#ffffff",
-    statusKanban: "",
     priority: "",
     startDate: (() => {
       const d = new Date();
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     })(),
     limitDate: "",
     description: "",
@@ -66,7 +62,6 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = "El nombre es obligatorio";
     if (!form.studentIDs.length) newErrors.studentIDs = "Debes asignar al menos un estudiante";
-    if (!form.statusKanban) newErrors.statusKanban = "Selecciona un estado";
     if (!form.priority) newErrors.priority = "Selecciona una prioridad";
     if (!form.limitDate) newErrors.limitDate = "Fecha límite obligatoria";
     return newErrors;
@@ -94,7 +89,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
       dataToSend.append("files", file);
     });
 
-    onSave(dataToSend);
+    onSave(form, dataToSend);
   };
 
   return (
@@ -111,7 +106,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
           <div className="form-group row-align">
             <label>Nombre:</label>
             <Input
-             variant="modal"
+              variant="modal"
               size="md"
               name="name"
               value={form.name}
@@ -147,21 +142,6 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
 
           <div className="form-grid">
             <div className="form-group">
-              <label>Estado</label>
-              <select
-                name="statusKanban"
-                value={form.statusKanban}
-                onChange={handleChange}
-              >
-                <option value="">Seleccionar</option>
-                <option value="TODO">Por hacer</option>
-                <option value="IN_PROGRESS">En progreso</option>
-                <option value="DONE">Hecho</option>
-              </select>
-              {errors.statusKanban && <p className="error-message">{errors.statusKanban}</p>}
-            </div>
-
-            <div className="form-group">
               <label>Prioridad</label>
               <select
                 name="priority"
@@ -181,8 +161,8 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
             <div className="form-group">
               <label>Fecha inicio</label>
               <Input
-              variant="modal"
-              size="md"
+                variant="modal"
+                size="md"
                 type="date"
                 name="startDate"
                 value={form.startDate}
@@ -194,8 +174,8 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
             <div className="form-group">
               <label>Fecha límite</label>
               <Input
-              variant="modal"
-              size="md"
+                variant="modal"
+                size="md"
                 type="date"
                 name="limitDate"
                 value={form.limitDate}

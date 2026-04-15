@@ -126,20 +126,21 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
     loadData();
   }, [loadData]);
 
-  const handleCreateTask = async (form) => {
-    if (!permissions.canCreate) {
-      showAlert("No puedes crear tareas porque eres administrador");
-      return;
-    }
+const handleCreateTask = async (form, formData, status) => {
+  if (!permissions.canCreate) {
+    showAlert("No puedes crear tareas porque eres administrador");
+    return;
+  }
 
-    try {
-      await addTaskRequest(isAdminView ? { ...form, adviserId } : form);
-      await loadData();
-      showAlert("Tarea creada correctamente");
-    } catch {
-      showAlert("Error al crear la tarea");
-    }
-  };
+  try {
+    formData.append("statusKanban", statusAdapter.toBackend(status));
+    await addTaskRequest(formData);
+    await loadData();
+    showAlert("Tarea creada correctamente");
+  } catch {
+    showAlert("Error al crear la tarea");
+  }
+};
 
   const handleMoveTask = async (taskId, newStatus) => {
     if (!permissions.canMove) {
@@ -148,7 +149,7 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
     }
 
     try {
-      await updateTaskStatusRequest(taskId, newStatus);
+      await updateTaskStatusRequest(taskId, statusAdapter.toBackend(newStatus));
 
       setTasks(prev =>
         prev.map(t =>
@@ -160,20 +161,27 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
     }
   };
 
-  const handleUpdateTask = async (id, formData) => {
-    if (!permissions.canEdit) {
-      showAlert("No puedes editar tareas porque eres administrador");
-      return;
+const handleUpdateTask = async (id, formData) => {
+  if (!permissions.canEdit) {
+    showAlert("No puedes editar tareas porque eres administrador");
+    return;
+  }
+
+  try {
+    const status = formData.get("statusKanban");
+
+    if (status) {
+      formData.set("statusKanban", statusAdapter.toBackend(status));
     }
 
-    try {
-      await updateTaskRequest(id, formData);
-      await loadData();
-      showAlert("Tarea actualizada correctamente");
-    } catch {
-      showAlert("Error al actualizar tarea");
-    }
-  };
+    await updateTaskRequest(id, formData);
+    await loadData();
+    showAlert("Tarea actualizada correctamente");
+
+  } catch {
+    showAlert("Error al actualizar tarea");
+  }
+};
 
   const handleDeleteTask = async (id) => {
     if (!permissions.canDelete) {

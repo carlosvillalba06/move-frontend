@@ -46,12 +46,28 @@
 .add-task:hover {
   background: #ffffff;
 }
+
 .task-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Aumentamos el espacio entre tarjetas */
-  padding: 10px; /* Espacio interno para que las sombras no se corten */
+  gap: 10px;
+
+  scroll-behavior: smooth;
+
+  /* esto hace que el scroll se sienta “invisible” */
+  scrollbar-width: none; /* Firefox */
 }
+
+/* Chrome / Edge / Safari */
+.task-list::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
 
 .task-card {
   background: white;
@@ -63,7 +79,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 5px; /* Margen de seguridad extra */
+  margin-bottom: 5px; 
 }
 
 .task-card:hover {
@@ -88,7 +104,7 @@
 
 .submissions-btn {
   align-self: flex-start;
-  margin-top: 8px; /* Espacio extra arriba del botón */
+  margin-top: 8px; 
   background: #f3f3f3;
   border: 1px solid #e0e0e0;
   border-radius: 10px;

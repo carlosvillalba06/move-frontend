@@ -23,12 +23,11 @@ const KanbanColumn = ({
 
   const columnTasks = tasks.filter(task => task.statusKanban === status);
 
-  const handleSaveTask = async (formData) => {
-    if (isReadOnly) return; 
+  const handleSaveTask = async (form, formData) => {
+    if (isReadOnly) return;
 
     try {
-      formData.append("statusKanban", status);
-      await onCreateTask(formData);
+      await onCreateTask(form, formData, status);
       setOpenModal(false);
     } catch (error) {
       console.error("Error creando tarea:", error);
@@ -37,7 +36,6 @@ const KanbanColumn = ({
 
   const handleDragOver = (e) => {
     if (isReadOnly) return;
-
     e.preventDefault();
     setIsOver(true);
   };
@@ -48,7 +46,7 @@ const KanbanColumn = ({
 
     const taskId = parseInt(e.dataTransfer.getData("text/plain"), 10);
 
-    if (!isNaN(taskId)) { 
+    if (!isNaN(taskId)) {
       onMoveTask(taskId, status);
     }
 
@@ -77,7 +75,11 @@ const KanbanColumn = ({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onDragLeave={handleDragLeave}
-        style={{ minHeight: "100px" }}
+        style={{
+          minHeight: "100px",
+          overflowY: "auto",
+        
+        }}
       >
         {columnTasks.length === 0 && (
           <p style={{ textAlign: "center", opacity: 0.6 }}>
@@ -109,9 +111,9 @@ const KanbanColumn = ({
         <TaskDetailsModal
           task={selectedTask}
           advisors={advisors}
-          isReadOnly={isReadOnly} 
+          isReadOnly={isReadOnly}
           onClose={() => setSelectedTask(null)}
-          onSave={isReadOnly ? null : onUpdateTask} 
+          onSave={isReadOnly ? null : onUpdateTask}
         />
       )}
 
