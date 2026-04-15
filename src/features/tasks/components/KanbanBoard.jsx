@@ -103,7 +103,6 @@ const KanbanBoard = ({ adviserId, isAdminView = false }) => {
       }
 
       const rawTasks = tasksRes?.data || tasksRes || [];
-      console.log("Tareas crudas recibidas:", rawTasks);
 
       const normalizedTasks = Array.isArray(rawTasks)
         ? rawTasks.map(t => ({

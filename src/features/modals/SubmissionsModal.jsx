@@ -80,35 +80,45 @@ const SubmissionsModal = ({ task, onClose }) => {
 
   const previewFile = (file) => {
     try {
-      let base64Data = file.fileData || file.data || "";
+
+      let base64Data = file.file; 
 
       if (!base64Data) {
-        alert("Este archivo no tiene datos para visualizar");
+        setAlertConfig({
+          isOpen: true,
+          message: "El archivo no contiene datos válidos"
+        });
         return;
       }
 
-      if (base64Data.includes(",")) {
-        base64Data = base64Data.split(",")[1];
+      if (base64Data.startsWith("data:")) {
+        window.open(base64Data, "_blank");
+        return;
       }
+
+      const mimeType = file.fileType || "application/pdf";
 
       const byteCharacters = atob(base64Data);
-      const byteNumbers = new Uint8Array(byteCharacters.length);
+      const byteArray = new Uint8Array(byteCharacters.length);
 
       for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+        byteArray[i] = byteCharacters.charCodeAt(i);
       }
 
-      const blob = new Blob([byteNumbers], {
-        type: file.fileType || "application/octet-stream"
-      });
-
+      const blob = new Blob([byteArray], { type: mimeType });
       const url = URL.createObjectURL(blob);
+
       window.open(url, "_blank");
 
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
 
     } catch (error) {
       console.error("Error al abrir archivo:", error);
+
+      setAlertConfig({
+        isOpen: true,
+        message: "Error al visualizar el archivo"
+      });
     }
   };
 
