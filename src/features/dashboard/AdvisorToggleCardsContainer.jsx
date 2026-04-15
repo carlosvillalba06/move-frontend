@@ -8,7 +8,7 @@ import AddAdvisor from "../users/AddAdvisor.jsx";
 import SuccessAlert from "../modals/SuccessAlert.jsx";
 import ConfirmAlert from "../modals/ConfirmAlert.jsx";
 
-const AdvisorCardsToggleContainer = () => {
+const AdvisorToggleCardsContainer = () => {
 
   const [search, setSearch] = useState("");
   const [advisors, setAdvisors] = useState([]);
@@ -24,19 +24,28 @@ const AdvisorCardsToggleContainer = () => {
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
 
-  const filteredAdvisors = advisors.filter(a =>
-    `${a.firstName} ${a.lastName} ${a.email}`.toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  // 🔍 Filtrado seguro
+  const filteredAdvisors = Array.isArray(advisors)
+    ? advisors.filter(a =>
+        `${a.firstName?.trim() || ""} ${a.lastName?.trim() || ""} ${a.email || ""}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      )
+    : [];
 
+  // 🔄 Cargar asesores
   const loadAdvisors = async () => {
     try {
       const res = await getAllAdvisersRequest();
-      const data = res?.data || res; 
+      const data = res?.data || res;
+
+      console.log("Respuesta del servidor:", res);
       console.log("Advisors cargados:", data);
-      setAdvisors(data);
+
+      setAdvisors(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error cargando asesores", error);
+      setAdvisors([]);
     }
   };
 
@@ -44,36 +53,41 @@ const AdvisorCardsToggleContainer = () => {
     loadAdvisors();
   }, []);
 
+  // ✅ Después de crear asesor
   const handleAdvisorCreated = async (advisor) => {
     await loadAdvisors();
+
     setSuccessConfig({
       isOpen: true,
       message: `Asesor ${advisor.firstName} registrado con éxito`
     });
   };
 
+  // 🔥 CAMBIO DE ESTADO (FIX REAL)
   const handleToggleStatus = (advisor) => {
-    const isActive = advisor.status;
+    console.log("Advisor seleccionado:", advisor);
 
+    const isActive = advisor.status;
     const actionText = isActive ? "deshabilitar" : "habilitar";
 
     setConfirmMessage(`¿Seguro que deseas ${actionText} este asesor?`);
 
     setConfirmAction(() => async () => {
       try {
+        console.log("Cambiando estado para:", advisor.email);
+
+        let res;
+
         if (isActive) {
-          await disableUserRequest(advisor.email);
+          res = await disableUserRequest(advisor.email);
         } else {
-          await enableUserRequest(advisor.email);
+          res = await enableUserRequest(advisor.email);
         }
 
-        setAdvisors(prev =>
-          prev.map(a =>
-            a.email === advisor.email
-              ? { ...a, status: !isActive }
-              : a
-          )
-        );
+        console.log("RESPUESTA BACKEND:", res);
+
+        // 🔥 IMPORTANTE: refrescar desde backend
+        await loadAdvisors();
 
         setSuccessConfig({
           isOpen: true,
@@ -84,6 +98,12 @@ const AdvisorCardsToggleContainer = () => {
 
       } catch (error) {
         console.error("Error al cambiar estado", error);
+
+        setSuccessConfig({
+          isOpen: true,
+          message: "Error al cambiar el estado del asesor"
+        });
+
       } finally {
         setConfirmOpen(false);
       }
@@ -92,6 +112,7 @@ const AdvisorCardsToggleContainer = () => {
     setConfirmOpen(true);
   };
 
+  // 📌 Modal
   const handleAddAdvisor = () => {
     setIsModalOpen(true);
   };
@@ -111,13 +132,17 @@ const AdvisorCardsToggleContainer = () => {
       <br />
 
       <div className="grid">
-        {filteredAdvisors.map((advisor, index) => (
-          <AdvisorToggleCard
-            key={advisor.id ?? `advisor-${index}`}
-            advisor={advisor}
-            onToggle={handleToggleStatus}
-          />
-        ))}
+        {filteredAdvisors.length > 0 ? (
+          filteredAdvisors.map((advisor, index) => (
+            <AdvisorToggleCard
+              key={advisor.id ?? `advisor-${index}`}
+              advisor={advisor}
+              onToggle={handleToggleStatus}
+            />
+          ))
+        ) : (
+          <p>No hay asesores disponibles</p>
+        )}
       </div>
 
       <AddAdvisor
@@ -137,7 +162,7 @@ const AdvisorCardsToggleContainer = () => {
       <ConfirmAlert
         isOpen={confirmOpen}
         message={confirmMessage}
-        onConfirm={confirmAction}
+        onConfirm={() => confirmAction && confirmAction()}
         onCancel={() => setConfirmOpen(false)}
       />
 
@@ -145,4 +170,4 @@ const AdvisorCardsToggleContainer = () => {
   );
 };
 
-export default AdvisorCardsToggleContainer;
+export default AdvisorToggleCardsContainer;
