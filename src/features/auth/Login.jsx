@@ -49,8 +49,41 @@ const Login = () => {
       newErrors.password = "La contraseña es obligatoria";
     }
 
-    setErrors({ ...newErrors });
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // 🔥 Limpia mensajes duplicados
+  const cleanErrorMessage = (message) => {
+    if (!message) return "Ocurrió un error";
+
+    const parts = message.split(/(?<=\b)/);
+    const unique = [...new Set(parts)];
+
+    return unique.join("").trim();
+  };
+
+  // 🔥 Mapea errores del backend
+  const mapErrorMessage = (message) => {
+    const msg = message.toLowerCase();
+
+    if (msg.includes("user is disabled") || msg.includes("disabled")) {
+      return "Tu cuenta está deshabilitada. Contacta al administrador.";
+    }
+
+    if (msg.includes("unauthorized")) {
+      return "No tienes permisos para acceder.";
+    }
+
+    if (msg.includes("bad credentials") || msg.includes("invalid")) {
+      return "Credenciales incorrectas";
+    }
+
+    if (msg.includes("user not found")) {
+      return "No existe una cuenta con este correo";
+    }
+
+    return "Error al iniciar sesión";
   };
 
   const handleSubmit = async (e) => {
@@ -64,21 +97,8 @@ const Login = () => {
 
       const success = await login(formData.email, formData.password);
 
-      if (success === "disabled") {
-        setServerError("Tu cuenta está deshabilitada. Contacta al administrador.");
-        setLoading(false);
-        return;
-      }
-
-      if (success === "unauthorized") {
-        setServerError("No tienes permisos para acceder. Contacta al administrador.");
-        setLoading(false);
-        return;
-      }
-
       if (!success) {
         setServerError("Credenciales incorrectas");
-        setLoading(false);
         return;
       }
 
@@ -90,7 +110,16 @@ const Login = () => {
       else navigate("/dashboard");
 
     } catch (err) {
-      setServerError("Error al iniciar sesión");
+
+      console.error("Login error:", err); // 👈 útil para debug
+
+      let message = err.message || "Ocurrió un error";
+
+      message = cleanErrorMessage(message);
+      message = mapErrorMessage(message);
+
+      setServerError(message);
+
     } finally {
       setLoading(false);
     }
@@ -143,8 +172,8 @@ const Login = () => {
               </p>
             )}
 
-            <Button variant="primary" size="full" type="submit">
-              Iniciar sesión
+            <Button variant="primary" size="full" type="submit" disabled={loading}>
+              {loading ? "Cargando..." : "Iniciar sesión"}
             </Button>
 
             <p>

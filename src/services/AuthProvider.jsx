@@ -53,20 +53,17 @@ function AuthProvider({ children }) {
   const login = async (username, password) => {
     try {
       const data = await loginRequest(username, password);
-      console.log("Login response data:", data.user);
+
       if (!data) {
-        setLoading(false);
-        return false;
+        throw new Error("Bad credentials");
       }
 
       if (data.user?.rol === "STUDENT") {
-        setLoading(false);
-        return "unauthorized";
+        throw new Error("Unauthorized"); 
       }
 
       if (data.user?.status === false) {
-        setLoading(false);
-        return "disabled";
+        throw new Error("User is disabled"); 
       }
 
       let fullUserInfo = data.user;
@@ -80,7 +77,7 @@ function AuthProvider({ children }) {
           fullUserInfo = res?.data || res;
         }
       } catch (error) {
-        console.error("Error real:", error);
+        console.error("Error obteniendo info extra:", error);
       }
 
       const sessionData = {
@@ -100,7 +97,8 @@ function AuthProvider({ children }) {
     } catch (error) {
       console.error("Login error", error);
       setLoading(false);
-      return false;
+
+      throw error; 
     }
   };
 
