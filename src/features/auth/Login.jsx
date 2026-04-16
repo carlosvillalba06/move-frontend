@@ -53,7 +53,6 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 🔥 Limpia mensajes duplicados
   const cleanErrorMessage = (message) => {
     if (!message) return "Ocurrió un error";
 
@@ -63,7 +62,6 @@ const Login = () => {
     return unique.join("").trim();
   };
 
-  // 🔥 Mapea errores del backend
   const mapErrorMessage = (message) => {
     const msg = message.toLowerCase();
 
@@ -111,7 +109,6 @@ const Login = () => {
 
     } catch (err) {
 
-      console.error("Login error:", err); // 👈 útil para debug
 
       let message = err.message || "Ocurrió un error";
 

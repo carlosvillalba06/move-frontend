@@ -4,7 +4,7 @@ import Input from "../../components/Input";
 import Button from "../../components/Button";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { resetPasswordRequest } from "../../services/authService";
-import SuccessAlert from "../modals/SuccessAlert"; 
+import SuccessAlert from "../modals/SuccessAlert";
 
 const ForgotPasswordEmail = () => {
 
@@ -21,7 +21,6 @@ const ForgotPasswordEmail = () => {
   };
 
   const validate = () => {
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email) {
@@ -37,42 +36,32 @@ const ForgotPasswordEmail = () => {
     return true;
   };
 
-  const cleanErrorMessage = (message) => {
-    if (!message) return "Ocurrió un error";
-
-    const parts = message.split(/(?<=\b)/);
-    const unique = [...new Set(parts)];
-
-    return unique.join("").trim();
-  };
-
   const mapErrorMessage = (message) => {
+    if (!message) return "Ocurrió un error";
 
     const msg = message.toLowerCase();
 
-    if (msg.includes("user not found")) {
+    if (msg.includes("user") && msg.includes("not")) {
       return "No existe una cuenta con este correo";
     }
 
-    if (msg.includes("invalid email")) {
+    if (msg.includes("invalid")) {
       return "El correo no es válido";
     }
 
-    if (msg.includes("already been verified")) {
+    if (msg.includes("verified")) {
       return "Este correo ya está verificado";
     }
 
-    return message;
+    return message; 
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     if (!validate()) return;
 
     try {
-
       setLoading(true);
 
       await resetPasswordRequest(email);
@@ -84,19 +73,20 @@ const ForgotPasswordEmail = () => {
 
     } catch (err) {
 
-      let message = err.message || "Ocurrió un error";
 
-      message = cleanErrorMessage(message);
+      let message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Ocurrió un error";
+
       message = mapErrorMessage(message);
 
       setError(message);
 
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   const handleCloseAlert = () => {
@@ -106,9 +96,7 @@ const ForgotPasswordEmail = () => {
 
   return (
     <AuthLayout>
-
       <main className="login-container">
-
         <section className="login-box">
 
           <h1>Recuperar contraseña</h1>
@@ -127,13 +115,12 @@ const ForgotPasswordEmail = () => {
               size="full"
             />
 
-
             <br />
             <br />
 
-            <Button 
-              variant="primary" 
-              size="full" 
+            <Button
+              variant="primary"
+              size="full"
               type="submit"
               disabled={loading}
             >
@@ -151,7 +138,6 @@ const ForgotPasswordEmail = () => {
         />
 
       </main>
-
     </AuthLayout>
   );
 };
