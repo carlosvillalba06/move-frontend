@@ -20,8 +20,24 @@ import { statusAdapter } from "../../../services/utils/statusAdapter";
 const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
+
+  const handleGenerate = () => {
+    if (!startDate || !endDate) {
+      setError("Debes seleccionar ambas fechas");
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      setError(`La fecha de inicio ${startDate} no puede ser mayor que la fecha de fin ${endDate}`);
+      return;
+    }
+
+    setError("");
+    onGenerate(startDate, endDate);
+  };
 
   return (
     <div style={{
@@ -33,14 +49,19 @@ const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
         background: "#fff", padding: "25px 30px", borderRadius: "12px",
         boxShadow: "0 4px 20px rgba(0,0,0,0.3)", width: "350px"
       }}>
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Generar Reporte</h2>
+        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+          Generar Reporte
+        </h2>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
           <label><b>Desde:</b>
             <input
               type="date"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                setError("");
+              }}
               style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
           </label>
@@ -49,14 +70,33 @@ const ReportDateModal = ({ isOpen, onClose, onGenerate }) => {
             <input
               type="date"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                setError("");
+              }}
               style={{ width: "100%", padding: "8px", marginTop: "5px" }}
             />
           </label>
         </div>
 
-        <div style={{ marginTop: "20px", display: "flex", justifyContent: "center", gap: "10px" }}>
-          <Button variant="primary" onClick={() => onGenerate(startDate, endDate)}>
+        {error && (
+          <p style={{
+            color: "red",
+            fontSize: "12px",
+            marginTop: "10px",
+            textAlign: "center"
+          }}>
+            {error}
+          </p>
+        )}
+
+        <div style={{
+          marginTop: "20px",
+          display: "flex",
+          justifyContent: "center",
+          gap: "10px"
+        }}>
+          <Button variant="primary" onClick={handleGenerate}>
             Generar
           </Button>
 

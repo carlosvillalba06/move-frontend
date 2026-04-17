@@ -28,6 +28,7 @@ const StudentCardsToggleContainer = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
+  const [emailToRegister, setEmailToRegister] = useState("");
 
   const filteredStudents = Array.isArray(students)
     ? students.filter(s =>
@@ -62,12 +63,9 @@ const StudentCardsToggleContainer = () => {
 
   useEffect(() => { loadStudents(); }, []);
 
-  const handleStudentCreated = async (student) => {
-    try {
-      await addStudentToBoardRequest(student.email);
-      await loadStudents();
-      setSuccessConfig({ isOpen: true, message: "Estudiante registrado y agregado" });
-    } catch (error) { console.error(error); }
+  const handleStudentCreated = async () => {
+    await loadStudents();
+    setSuccessConfig({ isOpen: true, message: "Estudiante registrado y agregado" });
   };
 
   const handleStudentAdded = async () => {
@@ -75,7 +73,10 @@ const StudentCardsToggleContainer = () => {
     setSuccessConfig({ isOpen: true, message: "Estudiante agregado al tablero" });
   };
 
-  const handleOpenRegister = () => setIsModalOpen(true);
+  const handleOpenRegister = (email) => {
+    setEmailToRegister(email);
+    setIsModalOpen(true);
+  };
 
   const handleToggleStatus = (student) => {
     const isActive = student.status;
@@ -357,6 +358,7 @@ const StudentCardsToggleContainer = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onStudentCreated={handleStudentCreated}
+        defaultEmail={emailToRegister}
       />
 
       <SuccessAlert

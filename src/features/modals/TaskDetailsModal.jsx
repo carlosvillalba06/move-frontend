@@ -34,6 +34,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
         typeof s === "object" ? Number(s.studentID || s.id) : Number(s)
       );
 
+
       setForm({
         name: task.name || "",
         studentIDs: normalizeIds(parsedStudents),
@@ -78,10 +79,35 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
   };
 
   const handleFileChange = (e) => {
+    const newFiles = Array.from(e.target.files);
+
+    const validFiles = [];
+    const invalidFiles = [];
+
+    newFiles.forEach(file => {
+      const isImage = file.type.startsWith("image/");
+      const isPDF = file.type === "application/pdf";
+
+      if (isImage || isPDF) {
+        validFiles.push(file);
+      } else {
+        invalidFiles.push(file.name);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      setErrors(prev => ({
+        ...prev,
+        files: "Solo se permiten imágenes o PDF"
+      }));
+    }
+
     setForm(prev => ({
       ...prev,
-      files: Array.from(e.target.files)
+      files: [...prev.files, ...validFiles]
     }));
+
+    e.target.value = null;
   };
 
   const handleRemoveExistingFile = (fileId) => {
@@ -118,6 +144,14 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
     if (!form.statusKanban) newErrors.statusKanban = "Selecciona un estado";
     if (!form.priority) newErrors.priority = "Selecciona una prioridad";
     if (!form.limitDate) newErrors.limitDate = "Fecha límite obligatoria";
+    if (form.limitDate && task?.startDate) {
+      const start = new Date(task.startDate);
+      const limit = new Date(form.limitDate);
+
+      if (limit < start) {
+        newErrors.limitDate = "La fecha límite no puede ser menor a la fecha de inicio";
+      }
+    }
 
     return newErrors;
   };
@@ -169,6 +203,11 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
     setConfirmOpen(false);
   };
 
+  const today = new Date().toISOString().split("T")[0];
+
+  const minDate = task?.startDate
+    ? (task.startDate > today ? task.startDate : today)
+    : today;
   if (!task) return null;
 
   return (
@@ -183,17 +222,17 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
 
         <form onSubmit={handleSubmit} className="task-form">
 
-            <label>Nombre</label>
-            <Input
-              variant="modal"
-              size="md"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              error={errors.name}
-             
-              disabled={isReadOnly}
-            />
+          <label>Nombre</label>
+          <Input
+            variant="modal"
+            size="md"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            error={errors.name}
+
+            disabled={isReadOnly}
+          />
 
           <div className="form-group">
             <label>Asignar estudiantes</label>
@@ -267,6 +306,7 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
               onChange={handleChange}
               error={errors.limitDate}
               disabled={isReadOnly}
+              min={minDate}
             />
           </div>
 
@@ -282,12 +322,17 @@ const TaskDetailsModal = ({ task, advisors = [], onClose, onSave, isReadOnly }) 
                 id="file-upload"
                 type="file"
                 multiple
+                accept="application/pdf, image/*"
                 className="file-input-hidden"
                 onChange={handleFileChange}
                 disabled={isReadOnly}
               />
             </div>
+            {errors.files && (
+              <p className="error-message">{errors.files}</p>
+            )}
           </div>
+          
 
           {task.files?.length > 0 && (
             <div className="form-group">

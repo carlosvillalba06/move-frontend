@@ -38,13 +38,35 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
 
   const handleFileChange = (e) => {
     const newFiles = Array.from(e.target.files);
+
+    const validFiles = [];
+    const invalidFiles = [];
+
+    newFiles.forEach(file => {
+      const isImage = file.type.startsWith("image/");
+      const isPDF = file.type === "application/pdf";
+
+      if (isImage || isPDF) {
+        validFiles.push(file);
+      } else {
+        invalidFiles.push(file.name);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+  setErrors(prev => ({
+    ...prev,
+    files: "Solo se permiten imágenes o archivos PDF"
+  }));
+}
+
     setForm(prev => ({
       ...prev,
-      files: [...prev.files, ...newFiles]
+      files: [...prev.files, ...validFiles]
     }));
+
     e.target.value = null;
   };
-
   const removeFile = (index) => {
     setForm(prev => ({
       ...prev,
@@ -181,6 +203,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
                 value={form.limitDate}
                 onChange={handleChange}
                 error={errors.limitDate}
+                min={form.startDate}
               />
             </div>
           </div>
@@ -202,6 +225,7 @@ const AddTask = ({ onClose, advisors = [], onSave }) => {
                 id="file-upload"
                 type="file"
                 multiple
+                accept="application/pdf, image/*"
                 className="file-input-hidden"
                 onChange={handleFileChange}
               />

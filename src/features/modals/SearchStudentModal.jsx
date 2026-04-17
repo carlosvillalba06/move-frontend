@@ -18,24 +18,25 @@ const SearchStudentModal = ({
     if (!isOpen) return null;
 
     const handleAdd = async () => {
+        const emailTrim = email.trim().toLowerCase();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!email.trim()) {
+        if (!emailTrim) {
             setError("El correo es obligatorio");
             return;
         }
 
+        if (!emailRegex.test(emailTrim)) {
+            setError("El formato de correo no es válido");
+            return;
+        }
+
         const exists = students.some(
-            s => s.email.toLowerCase() === email.trim().toLowerCase()
+            s => s.email.toLowerCase() === emailTrim
         );
 
         if (exists) {
             setError("El estudiante ya está en el tablero");
-            return;
-        }
-
-        if (!emailRegex.test(email.trim())) {
-            setError("El formato de correo no es válido");
             return;
         }
 
@@ -44,12 +45,11 @@ const SearchStudentModal = ({
         setNotFound(false);
 
         try {
-            await addStudentToBoardRequest(email.trim());
+            await addStudentToBoardRequest(emailTrim);
             onStudentAdded();
             resetState();
             onClose();
         } catch (err) {
-            console.log("No existe:", err);
             setNotFound(true);
         } finally {
             setLoading(false);
@@ -57,7 +57,7 @@ const SearchStudentModal = ({
     };
 
     const handleRegister = () => {
-        onStudentNotFound(email);
+        onStudentNotFound(email.trim().toLowerCase());
         resetState();
         onClose();
     };
@@ -71,14 +71,12 @@ const SearchStudentModal = ({
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
                 <button className="close-x" onClick={onClose}>X</button>
 
                 <h2>Agregar estudiante</h2>
 
                 <div style={{ marginBottom: "1rem" }}>
                     <label>Correo:</label>
-                    <br />
                     <Input
                         name="email"
                         placeholder="ejemplo@gmail.com"
@@ -101,19 +99,15 @@ const SearchStudentModal = ({
 
                 {notFound && (
                     <div>
-                        <p style={{
-                            color: 'red',
-                            fontSize: '12px',
-                            marginTop: '4px'
-                        }}>El estudiante no está registrado</p>
-                        <br />
+                        <p style={{ color: 'red', fontSize: '12px' }}>
+                            El estudiante no está registrado
+                        </p>
 
                         <Button variant="secondary" size="sm" onClick={handleRegister}>
                             Registrar estudiante
                         </Button>
                     </div>
                 )}
-
             </div>
         </div>
     );

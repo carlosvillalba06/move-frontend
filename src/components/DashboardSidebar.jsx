@@ -16,16 +16,20 @@ const DashboardSidebar = ({ role }) => {
 
   const roleKey = role?.toUpperCase();
 
+    const isActive = (path) => {
+    return location.pathname.startsWith(path);
+  };
+
   return (
     <>
       {menu[roleKey]?.map((item, index) => (
-        <button key={index} onClick={() => navigate(item.path)}>
+        <button key={index} onClick={() => navigate(item.path)}  className={isActive(item.path) ? "active" : ""}>
           {item.label}
         </button>
       ))}
 
       <button
-        className="sidebar-footer"
+        className={`sidebar-footer ${isActive("/settings") ? "active" : ""}`}
         onClick={() => navigate("/settings")}
       >
         Configuraciones

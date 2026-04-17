@@ -6,12 +6,20 @@ import SearchBar from "../../components/SearchBar.jsx";
 const AdvisorCardsContainer = () => {
   const [search, setSearch] = useState("");
   const [advisors, setAdvisors] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
-  const filteredAdvisors = advisors.filter(a =>
-    `${a.firstName || ""} ${a.lastName || ""} ${a.email || ""}`
+  const filteredAdvisors = advisors.filter(a => {
+    const matchesSearch = `${a.firstName || ""} ${a.lastName || ""} ${a.email || ""}`
       .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+      .includes(search.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "ALL" ||
+      (statusFilter === "ACTIVE" && a.status) ||
+      (statusFilter === "INACTIVE" && !a.status);
+
+    return matchesSearch && matchesStatus;
+  });
 
   useEffect(() => {
     const loadAdvisors = async () => {
@@ -29,7 +37,11 @@ const AdvisorCardsContainer = () => {
 
   return (
     <div>
-      <SearchBar setSearch={setSearch} />
+      <SearchBar
+        setSearch={setSearch}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+      />
 
       <br />
 

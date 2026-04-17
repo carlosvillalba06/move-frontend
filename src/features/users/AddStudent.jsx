@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { registerStudentRequest } from "../../services/adviserService";
+import React, { useState, useEffect } from "react";
+import { registerStudentRequest, addStudentToBoardRequest } from "../../services/adviserService";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 
-const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
+const AddStudent = ({ isOpen, onClose, onStudentCreated, defaultEmail }) => {
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -11,6 +12,16 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (defaultEmail) {
+      setForm(prev => ({
+        ...prev,
+        email: defaultEmail
+      }));
+    }
+  }, [defaultEmail]);
 
   if (!isOpen) return null;
 
@@ -41,8 +52,6 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
 
     if (!form.email.trim()) {
       newErrors.email = "El correo es obligatorio";
-    } else if (!form.email.includes("@")) {
-      newErrors.email = "El correo debe contener @";
     }
 
     return newErrors;
@@ -58,18 +67,20 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
       return;
     }
 
-    try {
-      await registerStudentRequest({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim()
-      });
+    setLoading(true);
 
-      await onStudentCreated({
+    try {
+      const studentData = {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim()
-      });
+      };
+
+      await registerStudentRequest(studentData);
+
+      await addStudentToBoardRequest(studentData.email);
+
+      await onStudentCreated(studentData);
 
       setForm({
         firstName: "",
@@ -79,12 +90,13 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
 
       setErrors({});
       onClose();
-    } catch (error) {
-      console.error("Error al registrar estudiante:", error);
 
+    } catch (error) {
       setErrors({
-        email: error.message || "Error al registrar el correo"
+        email: error.message || "Error al registrar"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,12 +115,9 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
               <label>Nombre(s):</label>
               <Input
                 name="firstName"
-                placeholder="Ej. Carlos Giovanni"
                 value={form.firstName}
                 onChange={handleChange}
                 error={errors.firstName}
-                variant="modal"
-                size="md"
               />
             </div>
 
@@ -116,12 +125,9 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
               <label>Apellidos:</label>
               <Input
                 name="lastName"
-                placeholder="Ej. Villalba González"
                 value={form.lastName}
                 onChange={handleChange}
                 error={errors.lastName}
-                variant="modal"
-                size="md"
               />
             </div>
 
@@ -129,20 +135,16 @@ const AddStudent = ({ isOpen, onClose, onStudentCreated }) => {
               <label>Correo:</label>
               <Input
                 name="email"
-                placeholder="ejemplo@gmail.com"
                 value={form.email}
-                onChange={handleChange}
-                error={errors.email}
-                variant="modal"
-                size="md"
+                readOnly
               />
             </div>
 
           </div>
 
           <footer>
-            <Button variant="primary" size="sm" type="submit">
-              Registrar
+            <Button type="submit">
+              {loading ? "Registrando..." : "Registrar"}
             </Button>
           </footer>
 

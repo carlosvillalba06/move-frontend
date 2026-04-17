@@ -24,7 +24,6 @@ const AdvisorToggleCardsContainer = () => {
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
 
-  // 🔍 Filtrado seguro
   const filteredAdvisors = Array.isArray(advisors)
     ? advisors.filter(a =>
         `${a.firstName?.trim() || ""} ${a.lastName?.trim() || ""} ${a.email || ""}`
@@ -33,7 +32,6 @@ const AdvisorToggleCardsContainer = () => {
       )
     : [];
 
-  // 🔄 Cargar asesores
   const loadAdvisors = async () => {
     try {
       const res = await getAllAdvisersRequest();
@@ -53,7 +51,6 @@ const AdvisorToggleCardsContainer = () => {
     loadAdvisors();
   }, []);
 
-  // ✅ Después de crear asesor
   const handleAdvisorCreated = async (advisor) => {
     await loadAdvisors();
 
@@ -63,7 +60,6 @@ const AdvisorToggleCardsContainer = () => {
     });
   };
 
-  // 🔥 CAMBIO DE ESTADO (FIX REAL)
   const handleToggleStatus = (advisor) => {
     console.log("Advisor seleccionado:", advisor);
 
@@ -86,7 +82,6 @@ const AdvisorToggleCardsContainer = () => {
 
         console.log("RESPUESTA BACKEND:", res);
 
-        // 🔥 IMPORTANTE: refrescar desde backend
         await loadAdvisors();
 
         setSuccessConfig({
@@ -112,7 +107,6 @@ const AdvisorToggleCardsContainer = () => {
     setConfirmOpen(true);
   };
 
-  // 📌 Modal
   const handleAddAdvisor = () => {
     setIsModalOpen(true);
   };

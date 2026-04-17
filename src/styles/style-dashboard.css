@@ -82,6 +82,8 @@
   gap: 12px;
 }
 
+
+
 .dashboard-sidebar button {
   width: 100%;
   padding: 14px;
@@ -94,6 +96,18 @@
   cursor: pointer;
   transition: all 0.2s ease;
   color: #444;
+}
+
+.dashboard-sidebar button.active {
+  background-color: #b0b0b0;
+  border-color: #888;
+  color: #000;
+   transform: translateX(5px);
+}
+.dashboard-sidebar button.active {
+  background-color: #b0b0b0;
+  border-color: #888;
+  color: #000;
 }
 
 .dashboard-sidebar button:hover {
